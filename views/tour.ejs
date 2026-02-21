@@ -1,0 +1,1109 @@
+<!-- Modern Tour Packages Content -->
+<div class="tour-packages-content">
+  <!-- Page Header -->
+  <div class="row mb-4" data-aos="fade-up">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="text-gradient fw-bold mb-2">Tour Packages</h2>
+          <p class="text-muted mb-0">Create and manage tour packages for your website</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-outline" id="exportBtn" data-aos="fade-left" data-aos-delay="100">
+            <i class="bi bi-download me-2"></i> Export
+            </button>
+          <button class="btn btn-primary" id="addPackageBtn" data-aos="fade-left" data-aos-delay="200">
+            <i class="bi bi-plus-lg me-2"></i> Add Tour Package
+          </button>
+            </div>
+          </div>
+        </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="row mb-4" data-aos="fade-up" data-aos-delay="300">
+    <div class="col-12">
+      <div class="card shadow-soft">
+          <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="text" class="form-control" id="searchInput" placeholder="Search packages...">
+                <label for="searchInput">
+                  <i class="bi bi-search me-2"></i>Search by title or description
+                </label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-floating">
+                <select class="form-select" id="featuredFilter">
+                  <option value="all">All packages</option>
+                  <option value="featured">Featured only</option>
+                  <option value="active">Active only</option>
+                </select>
+                <label for="featuredFilter">Filter by status</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-primary btn-sm filter-btn active" data-filter="all">All</button>
+                <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="featured">Featured</button>
+                <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="budget">Budget</button>
+                <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="luxury">Luxury</button>
+                <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="adventure">Adventure</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+            </div>
+
+            <!-- Packages Grid -->
+  <div class="row" data-aos="fade-up" data-aos-delay="400">
+    <div class="col-12">
+      <div id="packagesGrid" class="row g-4"></div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-5" style="display:none">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+        <div class="mt-3 text-muted">Loading tour packages...</div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-5" style="display:none">
+        <div class="bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+          <i class="bi bi-box-seam text-white" style="font-size: 2rem;"></i>
+            </div>
+        <h4 class="fw-bold mb-2">No tour packages yet</h4>
+        <p class="text-muted mb-4">Create your first tour package to get started</p>
+        <button class="btn btn-primary" id="addFirstPackageBtn">
+          <i class="bi bi-plus-lg me-2"></i> Create First Package
+        </button>
+          </div>
+        </div>
+  </div>
+  </div>
+
+<!-- Custom Styles for Tour Packages -->
+<style>
+  .package-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 0;
+    border: 1px solid var(--gray-200);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  
+  .package-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+  }
+  
+  .package-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  
+  .package-card-body {
+    padding: 1.5rem;
+  }
+  
+  .package-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--gray-800);
+  }
+  
+  .package-description {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .package-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .package-stars {
+    color: #fbbf24;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+  }
+  
+  .package-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--gray-500);
+    margin-bottom: 1rem;
+  }
+  
+  .package-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: var(--transition);
+  }
+  
+  .package-card:hover .package-actions {
+    opacity: 1;
+  }
+  
+  .package-actions .btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .package-featured {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: var(--gradient-secondary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .filter-btn {
+    border-radius: var(--radius);
+    font-weight: 500;
+    transition: var(--transition);
+  }
+  
+  .filter-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  
+  .dropzone {
+    border: 2px dashed var(--gray-300);
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    background: var(--gray-50);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+  }
+  
+  .dropzone:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.05);
+  }
+  
+  .dropzone.dragover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+    transform: scale(1.02);
+  }
+  
+  .dropzone-icon {
+    font-size: 3rem;
+    color: var(--gray-400);
+    margin-bottom: 1rem;
+  }
+  
+  .dropzone-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+  }
+  
+  .dropzone-subtext {
+    font-size: 0.9rem;
+    color: var(--gray-500);
+  }
+  
+  .gallery-item {
+    position: relative;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: white;
+    transition: var(--transition);
+  }
+  
+  .gallery-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .gallery-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+  }
+  
+  .gallery-item-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+  }
+  
+  .gallery-item-actions .btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .gallery-caption {
+    padding: 8px;
+    font-size: 0.8rem;
+    color: var(--gray-600);
+    background: rgba(255,255,255,0.9);
+    border-top: 1px solid var(--gray-200);
+  }
+  
+  .gallery-caption input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 2px;
+  }
+  
+  .gallery-caption input:focus {
+    outline: none;
+    background: white;
+    border-radius: 4px;
+  }
+</style>
+
+  <!-- Add/Edit Tour Package Modal -->
+  <div class="modal fade" id="packageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Add New Tour Package</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="packageForm">
+            <input type="hidden" id="packageId" />
+            <input type="hidden" id="selectedImageData" />
+            
+            <!-- Image Selection Section -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Package Image *</label>
+              <div id="modalDropzone" class="dropzone" tabindex="0" style="margin:0;">
+                <div class="dropzone-icon">
+                  <i class="bi bi-cloud-upload"></i>
+                </div>
+                <div class="dropzone-text">Drag & drop image here</div>
+                <div class="dropzone-subtext">or click to select file</div>
+                <div class="mt-3">
+                  <small class="text-muted">Supported formats: JPG, PNG, GIF</small>
+                </div>
+              </div>
+              <input id="modalFileInput" type="file" accept="image/*" style="display:none" />
+            </div>
+
+            <!-- Image Preview -->
+            <div id="imagePreviewSection" class="mb-4" style="display:none;">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label fw-semibold mb-0">Image Preview</label>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeImage()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Change Image
+                </button>
+              </div>
+              <div id="imagePreview" class="border rounded p-3 text-center" style="background:#f8f9fa">
+                <img id="previewImage" class="img-fluid rounded" style="max-height:300px;object-fit:contain;" />
+              </div>
+            </div>
+
+            <!-- Package Gallery Section -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Package Gallery</label>
+              <div id="galleryDropzone" class="dropzone" style="margin:0;">
+                <div class="dropzone-icon">
+                  <i class="bi bi-images"></i>
+                </div>
+                <div class="dropzone-text">Drag & drop multiple images here</div>
+                <div class="dropzone-subtext">or click to select files</div>
+                <div class="mt-3">
+                  <small class="text-muted">Supported formats: JPG, PNG, GIF (Max 10 images)</small>
+                </div>
+              </div>
+              <input id="galleryFileInput" type="file" accept="image/*" multiple style="display:none" />
+              
+              <!-- Gallery Preview -->
+              <div id="galleryPreview" class="mt-3" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <label class="form-label fw-semibold mb-0">Gallery Preview</label>
+                  <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearGallery()">
+                    <i class="bi bi-trash me-1"></i>Clear All
+                  </button>
+                </div>
+                <div id="galleryItems" class="row g-2"></div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="packageTitle" class="form-label">Title *</label>
+                  <input type="text" class="form-control" id="packageTitle" required>
+                </div>
+                <div class="mb-3">
+                  <label for="packageDescription" class="form-label">Description *</label>
+                  <textarea class="form-control" id="packageDescription" rows="4" placeholder="Enter detailed description of the tour package..." required></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="packageLocation" class="form-label">Location</label>
+                  <input type="text" class="form-control" id="packageLocation" placeholder="e.g., Paris, France">
+                </div>
+                <div class="mb-3">
+                  <label for="packageDuration" class="form-label">Duration</label>
+                  <input type="text" class="form-control" id="packageDuration" placeholder="e.g., 5 days, 3 nights">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="packageStars" class="form-label">Rating (Stars) *</label>
+                      <select class="form-select" id="packageStars" required>
+                        <option value="">Select rating</option>
+                        <option value="1">1 Star</option>
+                        <option value="2">2 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="5">5 Stars</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="packagePrice" class="form-label">Price *</label>
+                      <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="packagePrice" placeholder="0.00" min="0" step="0.01" required>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="packageMaxGroupSize" class="form-label">Max Group Size</label>
+                  <input type="number" class="form-control" id="packageMaxGroupSize" placeholder="e.g., 20" min="1">
+                </div>
+                <div class="mb-3">
+                  <label for="packageIncluded" class="form-label">What's Included</label>
+                  <textarea class="form-control" id="packageIncluded" rows="3" placeholder="Enter items separated by commas (e.g., Hotel, Meals, Transport)"></textarea>
+                  <div class="form-text">Separate items with commas</div>
+                </div>
+                <div class="mb-3">
+                  <label for="packageExcluded" class="form-label">What's Not Included</label>
+                  <textarea class="form-control" id="packageExcluded" rows="3" placeholder="Enter items separated by commas (e.g., Flights, Insurance)"></textarea>
+                  <div class="form-text">Separate items with commas</div>
+                </div>
+                <div class="mb-3">
+                  <label for="packageHighlights" class="form-label">Highlights</label>
+                  <textarea class="form-control" id="packageHighlights" rows="3" placeholder="Enter highlights separated by commas"></textarea>
+                  <div class="form-text">Separate highlights with commas</div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="packageFeatured">
+                    <label class="form-check-label" for="packageFeatured">
+                      Mark as featured package
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Image Details</label>
+                  <div id="imageDetails" class="border rounded p-3" style="background:#f8f9fa;font-size:14px;">
+                    <div class="text-muted">No image selected</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="savePackageBtn">
+            <i class="bi bi-check-circle me-1"></i>Save Package
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Package Modal -->
+  <div class="modal fade" id="viewPackageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body p-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 id="viewTitle" class="mb-1">Package Title</h5>
+              <div id="viewLocation" class="text-muted mb-2">Location</div>
+              <div id="viewDuration" class="text-muted mb-2">Duration</div>
+              <div id="viewStars" class="text-warning mb-2">★★★★★</div>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary" id="editPackageBtn">
+                <i class="bi bi-pencil me-1"></i>Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger" id="deletePackageBtn">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+              <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+          <img id="viewImage" src="" class="img-fluid rounded mb-3" alt="Package Image">
+          <div id="viewDescription" class="mb-3">Description</div>
+          <div class="row">
+            <div class="col-md-6">
+              <h6>What's Included:</h6>
+              <ul id="viewIncluded" class="list-unstyled"></ul>
+            </div>
+            <div class="col-md-6">
+              <h6>What's Not Included:</h6>
+              <ul id="viewExcluded" class="list-unstyled"></ul>
+            </div>
+          </div>
+          <div class="mt-3">
+            <h6>Highlights:</h6>
+            <div id="viewHighlights" class="text-muted"></div>
+          </div>
+          <div class="mt-3 text-end">
+            <h4 id="viewPrice" class="text-primary mb-0">$0.00</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Tour Package Management
+    let tourPackages = [];
+    let currentFilter = 'all';
+    let currentViewPackage = null;
+    let galleryImages = []; // Store gallery images
+
+    // DOM Elements
+    const packagesGrid = document.getElementById('packagesGrid');
+    const searchInput = document.getElementById('searchInput');
+    const featuredFilter = document.getElementById('featuredFilter');
+    const packageModal = new bootstrap.Modal(document.getElementById('packageModal'));
+    const viewPackageModal = new bootstrap.Modal(document.getElementById('viewPackageModal'));
+    const packageForm = document.getElementById('packageForm');
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadTourPackages();
+      setupEventListeners();
+    });
+
+    // Setup Event Listeners
+    function setupEventListeners() {
+      // Add Package button
+      document.getElementById('addPackageBtn').addEventListener('click', () => openPackageModal());
+
+      // Modal dropzone events
+      const modalDropzone = document.getElementById('modalDropzone');
+      const modalFileInput = document.getElementById('modalFileInput');
+      
+      modalDropzone.addEventListener('click', () => modalFileInput.click());
+      modalDropzone.addEventListener('dragover', handleModalDragOver);
+      modalDropzone.addEventListener('dragleave', handleModalDragLeave);
+      modalDropzone.addEventListener('drop', handleModalDrop);
+      modalFileInput.addEventListener('change', handleModalFileSelect);
+
+      // Gallery event listeners
+      setupGalleryEventListeners();
+
+      // Search and filters
+      searchInput.addEventListener('input', filterPackages);
+      featuredFilter.addEventListener('change', filterPackages);
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.getAttribute('data-filter');
+          filterPackages();
+        });
+      });
+
+      // Form submission
+      document.getElementById('savePackageBtn').addEventListener('click', savePackage);
+      document.getElementById('editPackageBtn').addEventListener('click', editCurrentPackage);
+      document.getElementById('deletePackageBtn').addEventListener('click', deleteCurrentPackage);
+    }
+
+    // Modal Drag and Drop Handlers
+    function handleModalDragOver(e) {
+      e.preventDefault();
+      document.getElementById('modalDropzone').classList.add('dragover');
+    }
+
+    function handleModalDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('modalDropzone').classList.remove('dragover');
+    }
+
+    function handleModalDrop(e) {
+      e.preventDefault();
+      document.getElementById('modalDropzone').classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files);
+      handleModalFiles(files);
+    }
+
+    function handleModalFileSelect(e) {
+      const files = Array.from(e.target.files);
+      handleModalFiles(files);
+    }
+
+    function handleModalFiles(files) {
+      const imageFile = files.find(file => file.type.startsWith('image/'));
+      
+      if (!imageFile) {
+        showAlert('Please select a valid image file', 'warning');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageData = {
+          file: imageFile,
+          preview: e.target.result,
+          name: imageFile.name,
+          size: imageFile.size,
+          type: imageFile.type
+        };
+        
+        showImagePreview(imageData);
+        document.getElementById('selectedImageData').value = JSON.stringify(imageData);
+      };
+      reader.readAsDataURL(imageFile);
+    }
+
+    function showImagePreview(imageData) {
+      // Show preview section
+      document.getElementById('imagePreviewSection').style.display = 'block';
+      
+      // Set preview image
+      document.getElementById('previewImage').src = imageData.preview;
+      
+      // Update image details
+      const sizeInMB = (imageData.size / (1024 * 1024)).toFixed(2);
+      document.getElementById('imageDetails').innerHTML = `
+        <div><strong>Name:</strong> ${imageData.name}</div>
+        <div><strong>Size:</strong> ${sizeInMB} MB</div>
+        <div><strong>Type:</strong> ${imageData.type}</div>
+        <div><strong>Dimensions:</strong> <span id="imageDimensions">Loading...</span></div>
+      `;
+      
+      // Get image dimensions
+      const img = new Image();
+      img.onload = function() {
+        document.getElementById('imageDimensions').textContent = `${this.width} × ${this.height} px`;
+      };
+      img.src = imageData.preview;
+      
+      // Hide dropzone
+      document.getElementById('modalDropzone').style.display = 'none';
+    }
+
+    function changeImage() {
+      // Reset to dropzone state
+      document.getElementById('modalDropzone').style.display = 'block';
+      document.getElementById('imagePreviewSection').style.display = 'none';
+      document.getElementById('selectedImageData').value = '';
+      document.getElementById('imageDetails').innerHTML = '<div class="text-muted">No image selected</div>';
+    }
+
+    // Modal Functions
+    function openPackageModal(packageData = null, isEdit = false) {
+      const modalTitle = document.getElementById('modalTitle');
+      const packageId = document.getElementById('packageId');
+      const modalDropzone = document.getElementById('modalDropzone');
+      const imagePreviewSection = document.getElementById('imagePreviewSection');
+      const imageDetails = document.getElementById('imageDetails');
+
+      if (isEdit && packageData) {
+        modalTitle.textContent = 'Edit Tour Package';
+        packageId.value = packageData._id;
+        
+        // Fill form fields
+        document.getElementById('packageTitle').value = packageData.title;
+        document.getElementById('packageDescription').value = packageData.description;
+        document.getElementById('packageLocation').value = packageData.location || '';
+        document.getElementById('packageDuration').value = packageData.duration || '';
+        document.getElementById('packageStars').value = packageData.stars;
+        document.getElementById('packagePrice').value = packageData.price;
+        document.getElementById('packageMaxGroupSize').value = packageData.maxGroupSize || '';
+        document.getElementById('packageIncluded').value = packageData.included.join(', ');
+        document.getElementById('packageExcluded').value = packageData.excluded.join(', ');
+        document.getElementById('packageHighlights').value = packageData.highlights.join(', ');
+        document.getElementById('packageFeatured').checked = packageData.featured;
+        
+        // Show existing image
+        imagePreviewSection.style.display = 'block';
+        document.getElementById('previewImage').src = packageData.imageUrl;
+        imageDetails.innerHTML = `
+          <div><strong>Current Image:</strong> ${packageData.title}</div>
+          <div><strong>Location:</strong> ${packageData.location || 'Not specified'}</div>
+          <div><strong>Featured:</strong> ${packageData.featured ? 'Yes' : 'No'}</div>
+        `;
+        modalDropzone.style.display = 'none';
+        
+        // Load existing gallery
+        galleryImages = packageData.gallery || [];
+        renderGalleryPreview();
+      } else {
+        modalTitle.textContent = 'Add New Tour Package';
+        packageId.value = '';
+        packageForm.reset();
+        
+        // Reset modal state
+        modalDropzone.style.display = 'block';
+        imagePreviewSection.style.display = 'none';
+        imageDetails.innerHTML = '<div class="text-muted">No image selected</div>';
+        document.getElementById('selectedImageData').value = '';
+        
+        // Clear gallery
+        galleryImages = [];
+        renderGalleryPreview();
+      }
+
+      packageModal.show();
+    }
+
+    // Save Package
+    async function savePackage() {
+      const packageId = document.getElementById('packageId').value;
+      const packageData = {
+        title: document.getElementById('packageTitle').value,
+        description: document.getElementById('packageDescription').value,
+        location: document.getElementById('packageLocation').value,
+        duration: document.getElementById('packageDuration').value,
+        stars: document.getElementById('packageStars').value,
+        price: document.getElementById('packagePrice').value,
+        maxGroupSize: document.getElementById('packageMaxGroupSize').value,
+        included: document.getElementById('packageIncluded').value,
+        excluded: document.getElementById('packageExcluded').value,
+        highlights: document.getElementById('packageHighlights').value,
+        featured: document.getElementById('packageFeatured').checked,
+        gallery: galleryImages.map(img => ({
+          url: (img.preview || img.url || ''),
+          caption: img.caption || '',
+          alt: img.alt || img.name || ''
+        }))
+      };
+
+      if (!packageData.title.trim() || !packageData.description.trim() || !packageData.stars || !packageData.price) {
+        showAlert('Please fill in all required fields', 'warning');
+        return;
+      }
+
+      try {
+        if (packageId) {
+          // Update existing package
+          const response = await fetch(`/api/tour-packages/${packageId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(packageData)
+          });
+          
+          if (response.ok) {
+            showAlert('Tour package updated successfully', 'success');
+            packageModal.hide();
+            loadTourPackages();
+          } else {
+            throw new Error('Failed to update tour package');
+          }
+        } else {
+          // Add new package - use FormData for file upload
+          const formData = new FormData();
+          
+          // Add text fields
+          formData.append('title', packageData.title);
+          formData.append('description', packageData.description);
+          formData.append('location', packageData.location);
+          formData.append('duration', packageData.duration);
+          formData.append('stars', packageData.stars);
+          formData.append('price', packageData.price);
+          formData.append('maxGroupSize', packageData.maxGroupSize);
+          formData.append('included', packageData.included);
+          formData.append('excluded', packageData.excluded);
+          formData.append('highlights', packageData.highlights);
+          formData.append('featured', packageData.featured);
+          formData.append('gallery', JSON.stringify(packageData.gallery));
+          
+          // Add image file if available
+          const imageFile = document.getElementById('modalFileInput').files[0];
+          if (imageFile) {
+            formData.append('image', imageFile);
+          }
+          
+          const response = await fetch('/api/tour-packages', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (response.ok) {
+            showAlert('Tour package created successfully', 'success');
+            packageModal.hide();
+            loadTourPackages();
+          } else {
+            throw new Error('Failed to create tour package');
+          }
+        }
+      } catch (error) {
+        console.error('Error saving package:', error);
+        showAlert('Failed to save tour package', 'danger');
+      }
+    }
+
+    // Load Tour Packages
+    async function loadTourPackages() {
+      try {
+        showLoading(true);
+        const response = await fetch('/api/tour-packages');
+        if (response.ok) {
+          tourPackages = await response.json();
+          renderPackages();
+        } else {
+          throw new Error('Failed to load tour packages');
+        }
+      } catch (error) {
+        console.error('Error loading tour packages:', error);
+        showAlert('Failed to load tour packages', 'danger');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Render Packages
+    function renderPackages() {
+      const filteredPackages = filterPackageItems(tourPackages, currentFilter, searchInput.value);
+      
+      if (filteredPackages.length === 0) {
+        packagesGrid.style.display = 'none';
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+      }
+
+      packagesGrid.style.display = 'flex';
+      document.getElementById('emptyState').style.display = 'none';
+
+      packagesGrid.innerHTML = filteredPackages.map(item => `
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="package-card">
+            ${item.featured ? '<div class="package-featured">Featured</div>' : ''}
+            <div class="package-actions">
+            <button class="btn btn-outline-primary" onclick="viewPackage('${item._id}')" title="View">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-outline-secondary" onclick="editPackage('${item._id}')" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-outline-danger" onclick="deletePackage('${item._id}')" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+          <img src="${item.imageUrl}" alt="${item.title}" onclick="viewPackage('${item._id}')" style="cursor:pointer">
+            <div class="package-card-body">
+              <div class="package-title">${item.title}</div>
+              <div class="package-description">${item.description.substring(0, 100)}${item.description.length > 100 ? '...' : ''}</div>
+              <div class="package-price">$${item.price.toLocaleString()}</div>
+              <div class="package-stars">${'★'.repeat(item.stars)}${'☆'.repeat(5-item.stars)}</div>
+              <div class="package-meta">
+                <span><i class="bi bi-geo-alt me-1"></i>${item.location || 'Location not specified'}</span>
+                <span><i class="bi bi-clock me-1"></i>${item.duration || 'Duration not specified'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Filter Packages
+    function filterPackages() {
+      renderPackages();
+    }
+
+    function filterPackageItems(items, filter, search) {
+      let filtered = items;
+
+      // Apply category filter
+      if (filter !== 'all') {
+        if (filter === 'featured') {
+          filtered = filtered.filter(item => item.featured);
+        } else if (filter === 'budget') {
+          filtered = filtered.filter(item => item.price < 1000);
+        } else if (filter === 'luxury') {
+          filtered = filtered.filter(item => item.price >= 2000);
+        } else if (filter === 'adventure') {
+          filtered = filtered.filter(item => 
+            item.title.toLowerCase().includes('adventure') ||
+            item.description.toLowerCase().includes('adventure') ||
+            item.highlights.some(h => h.toLowerCase().includes('adventure'))
+          );
+        }
+      }
+
+      // Apply search filter
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filtered = filtered.filter(item => 
+          item.title.toLowerCase().includes(searchLower) ||
+          item.description.toLowerCase().includes(searchLower) ||
+          item.location.toLowerCase().includes(searchLower) ||
+          item.highlights.some(h => h.toLowerCase().includes(searchLower))
+        );
+      }
+
+      return filtered;
+    }
+
+    // Package Actions
+    function viewPackage(id) {
+      const item = tourPackages.find(pkg => pkg._id === id);
+      if (!item) return;
+
+      currentViewPackage = item;
+      document.getElementById('viewImage').src = item.imageUrl;
+      document.getElementById('viewTitle').textContent = item.title;
+      document.getElementById('viewLocation').textContent = item.location || 'Location not specified';
+      document.getElementById('viewDuration').textContent = item.duration || 'Duration not specified';
+      document.getElementById('viewStars').innerHTML = '★'.repeat(item.stars) + '☆'.repeat(5-item.stars);
+      document.getElementById('viewDescription').textContent = item.description;
+      document.getElementById('viewPrice').textContent = `$${item.price.toLocaleString()}`;
+      
+      // Render included items
+      const includedList = document.getElementById('viewIncluded');
+      includedList.innerHTML = item.included.length > 0 
+        ? item.included.map(item => `<li><i class="bi bi-check-circle text-success me-2"></i>${item}</li>`).join('')
+        : '<li class="text-muted">No items specified</li>';
+      
+      // Render excluded items
+      const excludedList = document.getElementById('viewExcluded');
+      excludedList.innerHTML = item.excluded.length > 0 
+        ? item.excluded.map(item => `<li><i class="bi bi-x-circle text-danger me-2"></i>${item}</li>`).join('')
+        : '<li class="text-muted">No items specified</li>';
+      
+      // Render highlights
+      document.getElementById('viewHighlights').textContent = item.highlights.join(', ') || 'No highlights specified';
+      
+      viewPackageModal.show();
+    }
+
+    function editPackage(id) {
+      const item = tourPackages.find(pkg => pkg._id === id);
+      if (!item) return;
+
+      openPackageModal(item, true);
+    }
+
+    function editCurrentPackage() {
+      if (currentViewPackage) {
+        viewPackageModal.hide();
+        editPackage(currentViewPackage._id);
+      }
+    }
+
+    async function deletePackage(id) {
+      if (!confirm('Are you sure you want to delete this tour package?')) return;
+
+      try {
+        const response = await fetch(`/api/tour-packages/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showAlert('Tour package deleted successfully', 'success');
+          loadTourPackages();
+        } else {
+          throw new Error('Failed to delete tour package');
+        }
+      } catch (error) {
+        console.error('Error deleting tour package:', error);
+        showAlert('Failed to delete tour package', 'danger');
+      }
+    }
+
+    function deleteCurrentPackage() {
+      if (currentViewPackage) {
+        viewPackageModal.hide();
+        deletePackage(currentViewPackage._id);
+      }
+    }
+
+    // Utility Functions
+    function showLoading(show) {
+      document.getElementById('loadingState').style.display = show ? 'block' : 'none';
+      packagesGrid.style.display = show ? 'none' : 'flex';
+    }
+
+    function showAlert(message, type) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+      alertDiv.style.cssText = 'top:20px;left:50%;transform:translateX(-50%);z-index:9999;min-width:300px';
+      alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      document.body.appendChild(alertDiv);
+      
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 3000);
+    }
+
+    // Gallery Functions
+    function setupGalleryEventListeners() {
+      const galleryDropzone = document.getElementById('galleryDropzone');
+      const galleryFileInput = document.getElementById('galleryFileInput');
+      
+      galleryDropzone.addEventListener('click', () => galleryFileInput.click());
+      galleryDropzone.addEventListener('dragover', handleGalleryDragOver);
+      galleryDropzone.addEventListener('dragleave', handleGalleryDragLeave);
+      galleryDropzone.addEventListener('drop', handleGalleryDrop);
+      galleryFileInput.addEventListener('change', handleGalleryFileSelect);
+    }
+
+    function handleGalleryDragOver(e) {
+      e.preventDefault();
+      document.getElementById('galleryDropzone').classList.add('dragover');
+    }
+
+    function handleGalleryDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('galleryDropzone').classList.remove('dragover');
+    }
+
+    function handleGalleryDrop(e) {
+      e.preventDefault();
+      document.getElementById('galleryDropzone').classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files);
+      handleGalleryFiles(files);
+    }
+
+    function handleGalleryFileSelect(e) {
+      const files = Array.from(e.target.files);
+      handleGalleryFiles(files);
+    }
+
+    function handleGalleryFiles(files) {
+      const imageFiles = files.filter(file => file.type.startsWith('image/'));
+      
+      if (imageFiles.length === 0) {
+        showAlert('Please select valid image files', 'warning');
+        return;
+      }
+
+      if (galleryImages.length + imageFiles.length > 10) {
+        showAlert('Maximum 10 images allowed', 'warning');
+        return;
+      }
+
+      imageFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imageData = {
+            id: Date.now() + Math.random(),
+            file: file,
+            preview: e.target.result,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            caption: '',
+            alt: ''
+          };
+          
+          galleryImages.push(imageData);
+          renderGalleryPreview();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderGalleryPreview() {
+      const galleryPreview = document.getElementById('galleryPreview');
+      const galleryItems = document.getElementById('galleryItems');
+      
+      if (galleryImages.length === 0) {
+        galleryPreview.style.display = 'none';
+        return;
+      }
+
+      galleryPreview.style.display = 'block';
+      galleryItems.innerHTML = galleryImages.map(image => `
+        <div class="col-md-3 col-sm-4 col-6">
+          <div class="gallery-item">
+            <img src="${image.preview || image.url}" alt="${image.name || image.alt || ''}">
+            <div class="gallery-item-actions">
+              <button class="btn btn-sm btn-outline-danger" onclick="removeGalleryImage('${image.id}')" title="Remove">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+            <div class="gallery-caption">
+              <input type="text" placeholder="Caption (optional)" value="${image.caption || ''}" 
+                     onchange="updateGalleryCaption('${image.id}', this.value)">
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function removeGalleryImage(imageId) {
+      galleryImages = galleryImages.filter(img => img.id != imageId);
+      renderGalleryPreview();
+    }
+
+    function updateGalleryCaption(imageId, caption) {
+      const image = galleryImages.find(img => img.id == imageId);
+      if (image) {
+        image.caption = caption;
+      }
+    }
+
+    function clearGallery() {
+      galleryImages = [];
+      renderGalleryPreview();
+    }
+  </script>
+</body>
+</html>

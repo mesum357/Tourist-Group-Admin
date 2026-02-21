@@ -1,0 +1,1208 @@
+<!-- Modern Hiking Trails Content -->
+<div class="hiking-trails-content">
+  <!-- Page Header -->
+  <div class="row mb-4" data-aos="fade-up">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="text-gradient fw-bold mb-2">Hiking Trails</h2>
+          <p class="text-muted mb-0">Manage hiking trails and outdoor adventures</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-outline" id="exportBtn" data-aos="fade-left" data-aos-delay="100">
+            <i class="bi bi-download me-2"></i> Export
+            </button>
+          <button class="btn btn-primary" id="addTrailBtn" data-aos="fade-left" data-aos-delay="200">
+            <i class="bi bi-plus-lg me-2"></i> Add Trail
+          </button>
+            </div>
+          </div>
+        </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="row mb-4" data-aos="fade-up" data-aos-delay="300">
+    <div class="col-12">
+      <div class="card shadow-soft">
+          <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="text" class="form-control" id="searchInput" placeholder="Search trails...">
+                <label for="searchInput">
+                  <i class="bi bi-search me-2"></i>Search by title or location
+                </label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-floating">
+                <select class="form-select" id="difficultyFilter">
+                  <option value="all">All difficulties</option>
+                  <option value="easy">Easy</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="hard">Hard</option>
+                </select>
+                <label for="difficultyFilter">Filter by difficulty</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-primary btn-sm filter-btn active" data-filter="all">All</button>
+                <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="featured">Featured</button>
+                <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="easy">Easy</button>
+                <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="moderate">Moderate</button>
+                <button class="btn btn-outline-primary btn-sm filter-btn" data-filter="hard">Hard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+            </div>
+
+  <!-- Trails Grid -->
+  <div class="row" data-aos="fade-up" data-aos-delay="400">
+    <div class="col-12">
+      <div id="trailsGrid" class="row g-4"></div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-5" style="display:none">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+        <div class="mt-3 text-muted">Loading hiking trails...</div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-5" style="display:none">
+        <div class="bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+          <i class="bi bi-tree text-white" style="font-size: 2rem;"></i>
+            </div>
+        <h4 class="fw-bold mb-2">No hiking trails yet</h4>
+        <p class="text-muted mb-4">Create your first hiking trail to get started</p>
+        <button class="btn btn-primary" id="addFirstTrailBtn">
+          <i class="bi bi-plus-lg me-2"></i> Create First Trail
+        </button>
+          </div>
+        </div>
+  </div>
+  </div>
+
+<!-- Custom Styles for Hiking Trails -->
+<style>
+  .trail-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 0;
+    border: 1px solid var(--gray-200);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  
+  .trail-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+  }
+  
+  .trail-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  
+  .trail-card-body {
+    padding: 1.5rem;
+  }
+  
+  .trail-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--gray-800);
+  }
+  
+  .trail-description {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .trail-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stars {
+    color: #ffc107;
+    font-size: 0.875rem;
+    font-weight: bold;
+  }
+  
+  .rating-text {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-weight: 500;
+  }
+  
+  .trail-difficulty {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  
+  .trail-difficulty.easy {
+    background: var(--success-light);
+    color: var(--success);
+  }
+  
+  .trail-difficulty.moderate {
+    background: var(--warning-light);
+    color: var(--warning);
+  }
+  
+  .trail-difficulty.hard {
+    background: var(--error-light);
+    color: var(--error);
+  }
+  
+  .trail-activity {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  
+  .trail-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--gray-500);
+    margin-bottom: 1rem;
+  }
+  
+  .trail-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: var(--transition);
+  }
+  
+  .trail-card:hover .trail-actions {
+    opacity: 1;
+  }
+  
+  .trail-actions .btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .trail-featured {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: var(--gradient-secondary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* Gallery Styles */
+  .gallery-item {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--gray-50);
+    border: 2px solid var(--gray-200);
+    transition: all 0.3s ease;
+  }
+
+  .gallery-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .gallery-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+  }
+
+  .gallery-item-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .gallery-item:hover .gallery-item-actions {
+    opacity: 1;
+  }
+
+  .gallery-item-actions .btn {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.75rem;
+  }
+
+  .gallery-caption {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--gray-600);
+    background: white;
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .gallery-caption input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 0.25rem;
+  }
+
+  .gallery-caption input:focus {
+    outline: none;
+    background: var(--gray-50);
+    border-radius: var(--radius-sm);
+  }
+
+  .dropzone.dragover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    transform: scale(1.02);
+  }
+
+</style>
+
+<!-- Add/Edit Trail Modal -->
+<div class="modal fade" id="trailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Add New Hiking Trail</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+        <form id="trailForm">
+          <input type="hidden" id="trailId" />
+            
+            <!-- Image Selection Section -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Trail Image *</label>
+            <div id="modalDropzone" class="dropzone" tabindex="0">
+                <div class="dropzone-icon">
+                  <i class="bi bi-cloud-upload"></i>
+                </div>
+                <div class="dropzone-text">Drag & drop image here</div>
+                <div class="dropzone-subtext">or click to select file</div>
+                <div class="mt-3">
+                  <small class="text-muted">Supported formats: JPG, PNG, GIF</small>
+                </div>
+              </div>
+              <input id="modalFileInput" type="file" accept="image/*" style="display:none" />
+            </div>
+
+            <!-- Image Preview -->
+            <div id="imagePreviewSection" class="mb-4" style="display:none;">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label fw-semibold mb-0">Image Preview</label>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeImage()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Change Image
+                </button>
+              </div>
+              <div id="imagePreview" class="border rounded p-3 text-center" style="background:#f8f9fa">
+                <img id="previewImage" class="img-fluid rounded" style="max-height:300px;object-fit:contain;" />
+              </div>
+            </div>
+
+          <!-- Gallery Section -->
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <label class="form-label fw-semibold mb-0">Trail Gallery</label>
+              <button type="button" class="btn btn-sm btn-outline-primary" onclick="addGalleryImages()">
+                <i class="bi bi-plus-lg me-1"></i>Add Images
+              </button>
+            </div>
+            
+            <!-- Gallery Upload Area -->
+            <div id="galleryDropzone" class="dropzone mb-3" style="display:none;">
+              <div class="dropzone-icon">
+                <i class="bi bi-images"></i>
+              </div>
+              <div class="dropzone-text">Drag & drop multiple images here</div>
+              <div class="dropzone-subtext">or click to select files</div>
+              <div class="mt-3">
+                <small class="text-muted">Supported formats: JPG, PNG, GIF (Max 10 images)</small>
+              </div>
+            </div>
+            <input id="galleryFileInput" type="file" accept="image/*" multiple style="display:none" />
+            
+            <!-- Gallery Preview -->
+            <div id="galleryPreview" class="row g-2">
+              <!-- Gallery images will be added here dynamically -->
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                                 <div class="mb-3">
+                <label for="trailTitle" class="form-label">Title *</label>
+                <input type="text" class="form-control" id="trailTitle" required>
+                 </div>
+                                 <div class="mb-3">
+                <label for="trailDescription" class="form-label">Description *</label>
+                <textarea class="form-control" id="trailDescription" rows="4" placeholder="Enter detailed description of the hiking trail..." required></textarea>
+                 </div>
+                                 <div class="mb-3">
+                <label for="trailLocation" class="form-label">Location</label>
+                <input type="text" class="form-control" id="trailLocation" placeholder="e.g., Hunza Valley, Pakistan">
+                 </div>
+                                 <div class="mb-3">
+                <label for="trailDifficulty" class="form-label">Difficulty Level *</label>
+                <select class="form-select" id="trailDifficulty" required>
+                  <option value="">Select difficulty</option>
+                  <option value="easy">Easy</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="hard">Hard</option>
+                </select>
+                 </div>
+                                 <div class="mb-3">
+                <label for="trailActivity" class="form-label">Activity Type *</label>
+                <select class="form-select" id="trailActivity" required>
+                  <option value="">Select activity</option>
+                  <option value="hiking">Hiking</option>
+                  <option value="trekking">Trekking</option>
+                  <option value="photography">Photography</option>
+                  <option value="trophy hunting">Trophy Hunting</option>
+                  <option value="camping">Camping</option>
+                  <option value="cultural">Cultural</option>
+                  <option value="sports">Sports</option>
+                  <option value="adventure sports">Adventure Sports</option>
+                </select>
+                 </div>
+                <div class="row">
+                  <div class="col-md-6">
+                                         <div class="mb-3">
+                    <label for="trailStars" class="form-label">Rating *</label>
+                    <select class="form-select" id="trailStars" required>
+                         <option value="">Select rating</option>
+                         <option value="1">1 Star</option>
+                         <option value="2">2 Stars</option>
+                         <option value="3">3 Stars</option>
+                         <option value="4">4 Stars</option>
+                         <option value="5">5 Stars</option>
+                       </select>
+                     </div>
+                  </div>
+                                     <div class="col-md-6">
+                     <div class="mb-3">
+                    <label for="trailReviews" class="form-label">Number of Reviews</label>
+                    <input type="number" class="form-control" id="trailReviews" placeholder="0" min="0">
+                     </div>
+                   </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+              <div class="row">
+                <div class="col-md-6">
+                                 <div class="mb-3">
+                    <label for="trailDuration" class="form-label">Duration</label>
+                    <input type="text" class="form-control" id="trailDuration" placeholder="e.g., 4-6 hours">
+                 </div>
+                </div>
+                <div class="col-md-6">
+                                 <div class="mb-3">
+                    <label for="trailDistance" class="form-label">Distance</label>
+                    <input type="text" class="form-control" id="trailDistance" placeholder="e.g., 8 km">
+                  </div>
+                </div>
+                 </div>
+                 <div class="row">
+                  <div class="col-md-6">
+                                 <div class="mb-3">
+                    <label for="trailPrice" class="form-label">Price (USD) *</label>
+                    <input type="number" class="form-control" id="trailPrice" placeholder="0.00" min="0" step="0.01" required>
+                 </div>
+                </div>
+                <div class="col-md-6">
+                                 <div class="mb-3">
+                    <label for="trailElevation" class="form-label">Elevation Gain</label>
+                    <input type="text" class="form-control" id="trailElevation" placeholder="e.g., 500m">
+                  </div>
+                </div>
+                 </div>
+                                 <div class="mb-3">
+                <label for="trailBestTime" class="form-label">Best Time to Visit</label>
+                <input type="text" class="form-control" id="trailBestTime" placeholder="e.g., April to October">
+                 </div>
+                                 <div class="mb-3">
+                <label for="trailFeatures" class="form-label">Features</label>
+                <textarea class="form-control" id="trailFeatures" rows="3" placeholder="Enter features separated by commas (e.g., Scenic Views, Waterfalls, Wildlife)"></textarea>
+                <div class="form-text">Separate features with commas</div>
+              </div>
+              <div class="mb-3">
+                <label for="trailTips" class="form-label">Safety Tips</label>
+                <textarea class="form-control" id="trailTips" rows="3" placeholder="Enter safety tips separated by commas"></textarea>
+                <div class="form-text">Separate tips with commas</div>
+                 </div>
+                                 <div class="mb-3">
+                   <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="trailFeatured">
+                  <label class="form-check-label" for="trailFeatured">
+                       Mark as featured trail
+                     </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveTrailBtn">
+            <i class="bi bi-check-circle me-1"></i>Save Trail
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- JavaScript for Hiking Trails -->
+  <script>
+    // Hiking Trail Management
+    let hikingTrails = [];
+    let currentFilter = 'all';
+  let currentViewTrail = null;
+  let galleryImages = []; // Store gallery images
+
+    // DOM Elements
+  const trailsGrid = document.getElementById('trailsGrid');
+    const searchInput = document.getElementById('searchInput');
+  const difficultyFilter = document.getElementById('difficultyFilter');
+  
+  // Initialize modal after DOM is loaded
+  let trailModal;
+  const trailForm = document.getElementById('trailForm');
+  
+  // Initialize modal
+  function initializeModal() {
+    const modalElement = document.getElementById('trailModal');
+    if (modalElement && typeof bootstrap !== 'undefined') {
+      trailModal = new bootstrap.Modal(modalElement);
+      console.log('Modal initialized successfully');
+    } else {
+      console.error('Modal element not found or Bootstrap not loaded');
+    }
+  }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for the layout to fully load
+    setTimeout(() => {
+      initializeModal();
+      loadHikingTrails();
+      setupEventListeners();
+    }, 100);
+    });
+
+    // Setup Event Listeners
+    function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
+    // Add Trail button
+    const addTrailBtn = document.getElementById('addTrailBtn');
+    const addFirstTrailBtn = document.getElementById('addFirstTrailBtn');
+    
+    if (addTrailBtn) {
+      console.log('Add Trail button found, adding event listener');
+      addTrailBtn.addEventListener('click', () => {
+        console.log('Add Trail button clicked');
+        openTrailModal();
+      });
+    } else {
+      console.error('Add Trail button not found!');
+    }
+    
+    if (addFirstTrailBtn) {
+      console.log('Add First Trail button found, adding event listener');
+      addFirstTrailBtn.addEventListener('click', () => {
+        console.log('Add First Trail button clicked');
+        openTrailModal();
+      });
+    } else {
+      console.log('Add First Trail button not found (this is normal if not in empty state)');
+    }
+
+      // Modal dropzone events
+      const modalDropzone = document.getElementById('modalDropzone');
+      const modalFileInput = document.getElementById('modalFileInput');
+      
+      modalDropzone.addEventListener('click', () => modalFileInput.click());
+      modalDropzone.addEventListener('dragover', handleModalDragOver);
+      modalDropzone.addEventListener('dragleave', handleModalDragLeave);
+      modalDropzone.addEventListener('drop', handleModalDrop);
+      modalFileInput.addEventListener('change', handleModalFileSelect);
+
+      // Search and filters
+    searchInput.addEventListener('input', filterTrails);
+    difficultyFilter.addEventListener('change', filterTrails);
+    
+    // Filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.getAttribute('data-filter');
+        filterTrails();
+        });
+      });
+
+      // Form submission
+    document.getElementById('saveTrailBtn').addEventListener('click', saveTrail);
+    
+    // Gallery event listeners
+    setupGalleryEventListeners();
+    }
+
+    // Modal Drag and Drop Handlers
+    function handleModalDragOver(e) {
+      e.preventDefault();
+      document.getElementById('modalDropzone').classList.add('dragover');
+    }
+
+    function handleModalDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('modalDropzone').classList.remove('dragover');
+    }
+
+    function handleModalDrop(e) {
+      e.preventDefault();
+      document.getElementById('modalDropzone').classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files);
+      handleModalFiles(files);
+    }
+
+    function handleModalFileSelect(e) {
+      const files = Array.from(e.target.files);
+      handleModalFiles(files);
+    }
+
+    function handleModalFiles(files) {
+      const imageFile = files.find(file => file.type.startsWith('image/'));
+      
+      if (!imageFile) {
+        showAlert('Please select a valid image file', 'warning');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageData = {
+          file: imageFile,
+          preview: e.target.result,
+          name: imageFile.name,
+          size: imageFile.size,
+          type: imageFile.type
+        };
+        
+        showImagePreview(imageData);
+      };
+      reader.readAsDataURL(imageFile);
+    }
+
+    function showImagePreview(imageData) {
+      // Show preview section
+      document.getElementById('imagePreviewSection').style.display = 'block';
+      
+      // Set preview image
+      document.getElementById('previewImage').src = imageData.preview;
+      
+      // Hide dropzone
+      document.getElementById('modalDropzone').style.display = 'none';
+    }
+
+    function changeImage() {
+      // Reset to dropzone state
+      document.getElementById('modalDropzone').style.display = 'block';
+      document.getElementById('imagePreviewSection').style.display = 'none';
+    }
+
+    // Modal Functions
+  function openTrailModal(trailData = null, isEdit = false) {
+    console.log('Opening trail modal...', { trailData, isEdit });
+    
+    // Ensure modal is initialized
+    if (!trailModal) {
+      console.log('Modal not initialized, initializing now...');
+      initializeModal();
+    }
+    
+    if (!trailModal) {
+      console.error('Failed to initialize modal');
+      return;
+    }
+    
+      const modalTitle = document.getElementById('modalTitle');
+    const trailId = document.getElementById('trailId');
+      const modalDropzone = document.getElementById('modalDropzone');
+      const imagePreviewSection = document.getElementById('imagePreviewSection');
+    
+    console.log('Modal elements found:', {
+      modalTitle: !!modalTitle,
+      trailId: !!trailId,
+      modalDropzone: !!modalDropzone,
+      imagePreviewSection: !!imagePreviewSection
+    });
+
+    if (isEdit && trailData) {
+        modalTitle.textContent = 'Edit Hiking Trail';
+      trailId.value = trailData._id;
+        
+                 // Fill form fields
+      document.getElementById('trailTitle').value = trailData.title;
+      document.getElementById('trailDescription').value = trailData.description;
+      document.getElementById('trailLocation').value = trailData.location || '';
+      document.getElementById('trailDifficulty').value = trailData.difficulty;
+      document.getElementById('trailActivity').value = trailData.activity || 'hiking';
+      document.getElementById('trailStars').value = trailData.stars || '';
+      document.getElementById('trailReviews').value = trailData.reviews || '';
+      document.getElementById('trailDuration').value = trailData.duration || '';
+      document.getElementById('trailDistance').value = trailData.distance || '';
+      document.getElementById('trailPrice').value = trailData.price || '';
+      document.getElementById('trailElevation').value = trailData.elevation || '';
+      document.getElementById('trailBestTime').value = trailData.bestTime || '';
+      document.getElementById('trailFeatures').value = trailData.features.join(', ');
+      document.getElementById('trailTips').value = trailData.tips.join(', ');
+      document.getElementById('trailFeatured').checked = trailData.featured;
+        
+                 // Show existing image
+         imagePreviewSection.style.display = 'block';
+      document.getElementById('previewImage').src = trailData.imageUrl;
+         modalDropzone.style.display = 'none';
+      
+      // Load gallery images
+      if (trailData.gallery && trailData.gallery.length > 0) {
+        galleryImages = trailData.gallery.map((img, index) => ({
+          id: img._id || Date.now() + index,
+          url: img.url,
+          caption: img.caption || '',
+          alt: img.alt || ''
+        }));
+      } else {
+        galleryImages = [];
+      }
+      renderGalleryPreview();
+       } else {
+         modalTitle.textContent = 'Add New Hiking Trail';
+      trailId.value = '';
+      trailForm.reset();
+        
+        // Reset modal state
+        modalDropzone.style.display = 'block';
+        imagePreviewSection.style.display = 'none';
+      
+      // Clear gallery
+      clearGallery();
+    }
+
+    console.log('Showing modal...');
+    try {
+      trailModal.show();
+      console.log('Modal shown successfully');
+    } catch (error) {
+      console.error('Error showing modal:', error);
+    }
+  }
+
+  // Save Trail
+  async function saveTrail() {
+    const trailId = document.getElementById('trailId').value;
+    const formData = new FormData();
+    
+    // Add text fields
+    formData.append('title', document.getElementById('trailTitle').value);
+    formData.append('description', document.getElementById('trailDescription').value);
+    formData.append('location', document.getElementById('trailLocation').value);
+    formData.append('difficulty', document.getElementById('trailDifficulty').value);
+    formData.append('activity', document.getElementById('trailActivity').value);
+    formData.append('stars', document.getElementById('trailStars').value);
+    formData.append('reviews', document.getElementById('trailReviews').value);
+    formData.append('duration', document.getElementById('trailDuration').value);
+    formData.append('distance', document.getElementById('trailDistance').value);
+    formData.append('price', document.getElementById('trailPrice').value);
+    formData.append('elevation', document.getElementById('trailElevation').value);
+    formData.append('bestTime', document.getElementById('trailBestTime').value);
+    formData.append('features', document.getElementById('trailFeatures').value);
+    formData.append('tips', document.getElementById('trailTips').value);
+    formData.append('featured', document.getElementById('trailFeatured').checked);
+    formData.append('gallery', JSON.stringify(galleryImages));
+
+    // Add image file if available
+    const imageFile = document.getElementById('modalFileInput').files[0];
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    if (!formData.get('title').trim() || !formData.get('description').trim() || !formData.get('difficulty') || !formData.get('stars') || !formData.get('price')) {
+        showAlert('Please fill in all required fields', 'warning');
+        return;
+      }
+
+      try {
+      if (trailId) {
+        // Update existing trail - still use JSON for updates
+        const trailData = {
+          title: formData.get('title'),
+          description: formData.get('description'),
+          location: formData.get('location'),
+          difficulty: formData.get('difficulty'),
+          activity: formData.get('activity'),
+          stars: parseInt(formData.get('stars')),
+          reviews: parseInt(formData.get('reviews')) || 0,
+          duration: formData.get('duration'),
+          distance: formData.get('distance'),
+          price: parseFloat(formData.get('price')) || 0,
+          elevation: formData.get('elevation'),
+          bestTime: formData.get('bestTime'),
+          features: formData.get('features'),
+          tips: formData.get('tips'),
+          featured: formData.get('featured') === 'true',
+          gallery: JSON.parse(formData.get('gallery'))
+        };
+
+        const response = await fetch(`/api/hiking/${trailId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(trailData)
+          });
+          
+          if (response.ok) {
+            showAlert('Hiking trail updated successfully', 'success');
+          trailModal.hide();
+            loadHikingTrails();
+          } else {
+            throw new Error('Failed to update hiking trail');
+          }
+        } else {
+        // Add new trail - use FormData for file upload
+          const response = await fetch('/api/hiking', {
+            method: 'POST',
+          body: formData
+          });
+
+          if (response.ok) {
+            showAlert('Hiking trail created successfully', 'success');
+          trailModal.hide();
+            loadHikingTrails();
+          } else {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create hiking trail');
+          }
+        }
+      } catch (error) {
+      console.error('Error saving trail:', error);
+      showAlert('Failed to save hiking trail: ' + error.message, 'danger');
+      }
+    }
+
+    // Load Hiking Trails
+    async function loadHikingTrails() {
+      try {
+        showLoading(true);
+        const response = await fetch('/api/hiking');
+        if (response.ok) {
+          hikingTrails = await response.json();
+        renderTrails();
+        } else {
+          throw new Error('Failed to load hiking trails');
+        }
+      } catch (error) {
+        console.error('Error loading hiking trails:', error);
+        showAlert('Failed to load hiking trails', 'danger');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+  // Render Trails
+  function renderTrails() {
+    const filteredTrails = filterTrailItems(hikingTrails, currentFilter, searchInput.value);
+    
+    if (filteredTrails.length === 0) {
+      trailsGrid.style.display = 'none';
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+      }
+
+    trailsGrid.style.display = 'flex';
+      document.getElementById('emptyState').style.display = 'none';
+
+    trailsGrid.innerHTML = filteredTrails.map(item => `
+      <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="trail-card">
+          ${item.featured ? '<div class="trail-featured">Featured</div>' : ''}
+          <div class="trail-actions">
+            <button class="btn btn-outline-primary" onclick="viewTrail('${item._id}')" title="View">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-outline-secondary" onclick="editTrail('${item._id}')" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-outline-danger" onclick="deleteTrail('${item._id}')" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+          <img src="${item.imageUrl}" alt="${item.title}" onclick="viewTrail('${item._id}')" style="cursor:pointer">
+          <div class="trail-card-body">
+            <div class="trail-title">${item.title}</div>
+            <div class="trail-description">${item.description.substring(0, 100)}${item.description.length > 100 ? '...' : ''}</div>
+            <div class="trail-rating">
+              <div class="stars">
+                ${'★'.repeat(item.stars || 5)}${'☆'.repeat(5 - (item.stars || 5))}
+           </div>
+              <span class="rating-text">${item.stars || 5}/5 (${item.reviews || 0} reviews)</span>
+            </div>
+            <div class="trail-difficulty ${item.difficulty}">${item.difficulty.charAt(0).toUpperCase() + item.difficulty.slice(1)}</div>
+            <div class="trail-activity">${item.activity ? item.activity.charAt(0).toUpperCase() + item.activity.slice(1) : 'Hiking'}</div>
+            <div class="trail-meta">
+              <span><i class="bi bi-geo-alt me-1"></i>${item.location || 'Location not specified'}</span>
+              <span><i class="bi bi-clock me-1"></i>${item.duration || 'Duration not specified'}</span>
+              <span><i class="bi bi-currency-dollar me-1"></i>$${item.price || '0'}</span>
+              ${item.gallery && item.gallery.length > 0 ? `<span><i class="bi bi-images me-1"></i>${item.gallery.length} photos</span>` : ''}
+            </div>
+          </div>
+           </div>
+        </div>
+      `).join('');
+    }
+
+  // Filter Trails
+  function filterTrails() {
+    renderTrails();
+  }
+
+  function filterTrailItems(items, filter, search) {
+      let filtered = items;
+
+      // Apply category filter
+      if (filter !== 'all') {
+        if (filter === 'featured') {
+          filtered = filtered.filter(item => item.featured);
+      } else if (['easy', 'moderate', 'hard'].includes(filter)) {
+        filtered = filtered.filter(item => item.difficulty === filter);
+        }
+      }
+
+      // Apply search filter
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filtered = filtered.filter(item => 
+          item.title.toLowerCase().includes(searchLower) ||
+          item.description.toLowerCase().includes(searchLower) ||
+          item.location.toLowerCase().includes(searchLower) ||
+          item.features.some(f => f.toLowerCase().includes(searchLower))
+        );
+      }
+
+      return filtered;
+    }
+
+  // Trail Actions
+
+  function editTrail(id) {
+      const item = hikingTrails.find(trail => trail._id === id);
+      if (!item) return;
+    openTrailModal(item, true);
+  }
+
+  async function deleteTrail(id) {
+      if (!confirm('Are you sure you want to delete this hiking trail?')) return;
+
+      try {
+        const response = await fetch(`/api/hiking/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showAlert('Hiking trail deleted successfully', 'success');
+          loadHikingTrails();
+        } else {
+          throw new Error('Failed to delete hiking trail');
+        }
+      } catch (error) {
+        console.error('Error deleting hiking trail:', error);
+        showAlert('Failed to delete hiking trail', 'danger');
+      }
+    }
+
+    // Utility Functions
+    function showLoading(show) {
+      document.getElementById('loadingState').style.display = show ? 'block' : 'none';
+    trailsGrid.style.display = show ? 'none' : 'flex';
+    }
+
+    function showAlert(message, type) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+      alertDiv.style.cssText = 'top:20px;left:50%;transform:translateX(-50%);z-index:9999;min-width:300px';
+      alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      document.body.appendChild(alertDiv);
+      
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 3000);
+    }
+
+  // Gallery Management Functions
+  function addGalleryImages() {
+    const galleryFileInput = document.getElementById('galleryFileInput');
+    const galleryDropzone = document.getElementById('galleryDropzone');
+    
+    galleryFileInput.click();
+    galleryDropzone.style.display = 'block';
+  }
+
+  function setupGalleryEventListeners() {
+    const galleryFileInput = document.getElementById('galleryFileInput');
+    const galleryDropzone = document.getElementById('galleryDropzone');
+    
+    // File input change
+    galleryFileInput.addEventListener('change', handleGalleryFiles);
+    
+    // Dropzone events
+    galleryDropzone.addEventListener('click', () => galleryFileInput.click());
+    galleryDropzone.addEventListener('dragover', handleDragOver);
+    galleryDropzone.addEventListener('drop', handleGalleryDrop);
+  }
+
+  function handleGalleryFiles(event) {
+    const files = Array.from(event.target.files);
+    processGalleryFiles(files);
+  }
+
+  function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('dragover');
+  }
+
+  function handleGalleryDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('dragover');
+    const files = Array.from(event.dataTransfer.files);
+    processGalleryFiles(files);
+  }
+
+  function processGalleryFiles(files) {
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length === 0) {
+      showAlert('Please select valid image files', 'warning');
+      return;
+    }
+
+    if (galleryImages.length + imageFiles.length > 10) {
+      showAlert('Maximum 10 images allowed', 'warning');
+      return;
+    }
+
+    imageFiles.forEach(file => {
+      if (galleryImages.length >= 10) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageData = {
+          id: Date.now() + Math.random(),
+          url: e.target.result,
+          caption: '',
+          alt: file.name.split('.')[0]
+        };
+        galleryImages.push(imageData);
+        renderGalleryPreview();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderGalleryPreview() {
+    const galleryPreview = document.getElementById('galleryPreview');
+    
+    if (galleryImages.length === 0) {
+      galleryPreview.innerHTML = '<div class="col-12 text-center text-muted py-3">No images added yet</div>';
+      return;
+    }
+
+    galleryPreview.innerHTML = galleryImages.map(image => `
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="gallery-item">
+          <img src="${image.url}" alt="${image.alt}">
+          <div class="gallery-item-actions">
+            <button class="btn btn-sm btn-outline-danger" onclick="removeGalleryImage('${image.id}')" title="Remove">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+          <div class="gallery-caption">
+            <input type="text" placeholder="Add caption..." value="${image.caption}" 
+                   onchange="updateGalleryCaption('${image.id}', this.value)">
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function removeGalleryImage(imageId) {
+    galleryImages = galleryImages.filter(img => img.id != imageId);
+    renderGalleryPreview();
+  }
+
+  function updateGalleryCaption(imageId, caption) {
+    const image = galleryImages.find(img => img.id == imageId);
+    if (image) {
+      image.caption = caption;
+    }
+  }
+
+  function clearGallery() {
+    galleryImages = [];
+    renderGalleryPreview();
+  }
+
+  // View Trail with Gallery
+  function viewTrail(trailId) {
+    const trail = hikingTrails.find(t => t._id === trailId);
+    if (!trail) return;
+
+    currentViewTrail = trail;
+    
+    // Create gallery modal HTML
+    const galleryModalHtml = `
+      <div class="modal fade" id="galleryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">${trail.title} - Gallery</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <h6>Trail Details</h6>
+                  <p><strong>Location:</strong> ${trail.location || 'Not specified'}</p>
+                  <p><strong>Difficulty:</strong> ${trail.difficulty}</p>
+                  <p><strong>Duration:</strong> ${trail.duration || 'Not specified'}</p>
+                  <p><strong>Distance:</strong> ${trail.distance || 'Not specified'}</p>
+                  <p><strong>Elevation:</strong> ${trail.elevation || 'Not specified'}</p>
+                  <p><strong>Best Time:</strong> ${trail.bestTime || 'Not specified'}</p>
+                </div>
+                <div class="col-md-8">
+                  <h6>Trail Images</h6>
+                  <div class="row g-2" id="galleryView">
+                    ${trail.gallery && trail.gallery.length > 0 ? 
+                      trail.gallery.map(img => `
+                        <div class="col-6 col-md-4">
+                          <div class="gallery-item">
+                            <img src="${img.url}" alt="${img.alt}" class="img-fluid rounded" style="height: 150px; object-fit: cover; cursor: pointer;" onclick="openImageModal('${img.url}', '${img.caption || img.alt}')">
+                            ${img.caption ? `<div class="gallery-caption text-center mt-1"><small>${img.caption}</small></div>` : ''}
+                          </div>
+                        </div>
+                      `).join('') : 
+                      '<div class="col-12 text-center text-muted py-4">No gallery images available</div>'
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Remove existing gallery modal if any
+    const existingModal = document.getElementById('galleryModal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', galleryModalHtml);
+
+    // Show modal
+    const galleryModal = new bootstrap.Modal(document.getElementById('galleryModal'));
+    galleryModal.show();
+  }
+
+  // Open individual image in modal
+  function openImageModal(imageUrl, caption) {
+    const imageModalHtml = `
+      <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">${caption || 'Image'}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+              <img src="${imageUrl}" alt="${caption}" class="img-fluid rounded">
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Remove existing image modal if any
+    const existingModal = document.getElementById('imageModal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', imageModalHtml);
+
+    // Show modal
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    imageModal.show();
+  }
+</script>

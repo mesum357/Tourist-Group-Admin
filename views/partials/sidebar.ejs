@@ -1,0 +1,85 @@
+<!-- Modern Sidebar -->
+<aside class="sidebar d-none d-lg-block">
+  <!-- Sidebar Header -->
+  <div class="sidebar-header">
+    <a href="/" class="sidebar-brand">
+      <i class="bi bi-compass"></i>
+      <span>Tourist Admin</span>
+    </a>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    <ul class="nav nav-pills flex-column">
+      <li class="nav-item">
+        <a href="/" class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>" data-aos="slide-in-left"
+          data-aos-delay="100">
+          <i class="bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/tour" class="nav-link <%= currentPage === 'tour' ? 'active' : '' %>" data-aos="slide-in-left"
+          data-aos-delay="200">
+          <i class="bi bi-box-seam"></i>
+          <span>Tour Packages</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/hiking" class="nav-link <%= currentPage === 'hiking' ? 'active' : '' %>" data-aos="slide-in-left"
+          data-aos-delay="300">
+          <i class="bi bi-tree"></i>
+          <span>Hiking Trails</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/users" class="nav-link <%= currentPage === 'users' ? 'active' : '' %>" data-aos="slide-in-left"
+          data-aos-delay="400">
+          <i class="bi bi-people"></i>
+          <span>Users</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/recent-trips" class="nav-link <%= currentPage === 'recentTrips' ? 'active' : '' %>"
+          data-aos="slide-in-left" data-aos-delay="500">
+          <i class="bi bi-images"></i>
+          <span>Recent Trips</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/bookings" class="nav-link <%= currentPage === 'bookings' ? 'active' : '' %>" data-aos="slide-in-left"
+          data-aos-delay="600">
+          <i class="bi bi-calendar-check"></i>
+          <span>Bookings</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/payments" class="nav-link <%= currentPage === 'payments' ? 'active' : '' %>" data-aos="slide-in-left"
+          data-aos-delay="650">
+          <i class="bi bi-credit-card"></i>
+          <span>Payment Management</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/settings" class="nav-link <%= currentPage === 'settings' ? 'active' : '' %>" data-aos="slide-in-left"
+          data-aos-delay="700">
+          <i class="bi bi-gear"></i>
+          <span>Settings</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer p-3" data-aos="fade-up" data-aos-delay="800">
+    <div class="d-flex align-items-center">
+      <div class="user-avatar me-3">
+        <i class="bi bi-person"></i>
+      </div>
+      <div class="user-info">
+        <div class="user-name">Admin User</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>

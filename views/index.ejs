@@ -1,0 +1,359 @@
+<!-- Modern Dashboard Content -->
+<div class="dashboard-content">
+  <!-- Welcome Section -->
+  <div class="row mb-4" data-aos="fade-up">
+    <div class="col-12">
+      <div class="card bg-gradient-primary text-white border-0">
+        <div class="card-body p-4">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h2 class="card-title mb-2">Welcome back, Admin! 👋</h2>
+              <p class="card-text mb-0">Here's what's happening with your tourist business today.</p>
+            </div>
+            <div class="col-md-4 text-end">
+              <div class="d-flex justify-content-end">
+                <div class="bg-white bg-opacity-20 rounded-circle p-3">
+                  <i class="bi bi-graph-up-arrow fs-1"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="100">
+      <div class="kpi-card primary">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-label">Total Revenue</div>
+            <div class="kpi-metric">$<%= typeof dashboardData !=='undefined' ?
+                dashboardData.totalRevenue.toLocaleString() : '0' %>
+            </div>
+            <div
+              class="kpi-change <%= typeof dashboardData !== 'undefined' && dashboardData.revenueChange >= 0 ? 'positive' : 'negative' %>">
+              <i
+                class="bi bi-arrow-<%= typeof dashboardData !== 'undefined' && dashboardData.revenueChange >= 0 ? 'up' : 'down' %>"></i>
+              <%= typeof dashboardData !=='undefined' ? Math.abs(dashboardData.revenueChange).toFixed(1) : '0' %>% from
+                last month
+            </div>
+          </div>
+          <div class="kpi-icon primary">
+            <i class="bi bi-currency-dollar"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="200">
+      <div class="kpi-card success">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-label">Total Bookings</div>
+            <div class="kpi-metric">
+              <%= typeof dashboardData !=='undefined' ? dashboardData.totalBookings.toLocaleString() : '0' %>
+            </div>
+            <div
+              class="kpi-change <%= typeof dashboardData !== 'undefined' && dashboardData.bookingChange >= 0 ? 'positive' : 'negative' %>">
+              <i
+                class="bi bi-arrow-<%= typeof dashboardData !== 'undefined' && dashboardData.bookingChange >= 0 ? 'up' : 'down' %>"></i>
+              <%= typeof dashboardData !=='undefined' ? Math.abs(dashboardData.bookingChange).toFixed(1) : '0' %>% from
+                last month
+            </div>
+          </div>
+          <div class="kpi-icon success">
+            <i class="bi bi-calendar-check"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="300">
+      <div class="kpi-card warning">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-label">Active Users</div>
+            <div class="kpi-metric">
+              <%= typeof dashboardData !=='undefined' ? dashboardData.activeUsersCount.toLocaleString() : '0' %>
+            </div>
+            <div class="kpi-change">
+              <i class="bi bi-person-check-fill"></i> Users with bookings
+            </div>
+          </div>
+          <div class="kpi-icon warning">
+            <i class="bi bi-people"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="400">
+      <div class="kpi-card error">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-label">Tour Packages</div>
+            <div class="kpi-metric">
+              <%= typeof dashboardData !=='undefined' ? dashboardData.tourPackagesCount.toLocaleString() : '0' %>
+            </div>
+            <div class="kpi-change">
+              <i class="bi bi-box-seam"></i> Available packages
+            </div>
+          </div>
+          <div class="kpi-icon error">
+            <i class="bi bi-box-seam"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts and Analytics -->
+  <div class="row g-4 mb-4">
+    <div class="col-12 col-lg-8" data-aos="fade-up" data-aos-delay="500">
+      <div class="card shadow-soft">
+        <div class="card-header bg-white border-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Bookings Overview</h5>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="chartPeriod" id="chart7d" autocomplete="off" checked>
+              <label class="btn btn-outline-primary" for="chart7d">7D</label>
+              <input type="radio" class="btn-check" name="chartPeriod" id="chart30d" autocomplete="off">
+              <label class="btn btn-outline-primary" for="chart30d">30D</label>
+              <input type="radio" class="btn-check" name="chartPeriod" id="chart90d" autocomplete="off">
+              <label class="btn btn-outline-primary" for="chart90d">90D</label>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4" data-aos="fade-up" data-aos-delay="600">
+      <div class="card shadow-soft">
+        <div class="card-header bg-white border-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Recent Bookings</h5>
+            <a href="/bookings" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            <% if (typeof dashboardData !=='undefined' && dashboardData.recentBookings &&
+              dashboardData.recentBookings.length> 0) { %>
+              <% dashboardData.recentBookings.forEach(function(booking) { %>
+
+
+                <div class="list-group-item border-0 d-flex align-items-center">
+                  <div class="user-avatar me-3" style="width: 40px; height: 40px;">
+                    <i class="bi bi-person"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="fw-semibold">
+                      <%= booking.customerInfo.firstName %>
+                        <%= booking.customerInfo.lastName %>
+                    </div>
+                    <div class="small text-muted">
+                      <%= booking.tourPackageId ? booking.tourPackageId.title : (booking.hikingId ?
+                        booking.hikingId.title : 'N/A' ) %>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-semibold text-success">$<%= booking.paymentInfo.amount.toLocaleString() %>
+                    </div>
+                    <div class="small text-success">
+                      <i class="bi bi-check-circle me-1"></i>
+                      <%= booking.bookingStatus.charAt(0).toUpperCase() + booking.bookingStatus.slice(1) %>
+                    </div>
+                  </div>
+                </div>
+                <% }); %>
+                  <% } else { %>
+                    <div class="list-group-item border-0 text-center py-4">
+                      <i class="bi bi-calendar-event fs-1 text-muted mb-3"></i>
+                      <div class="text-muted">No recent bookings</div>
+                    </div>
+                    <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats and Actions -->
+    <div class="row g-4">
+      <div class="col-12 col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="700">
+        <div class="card text-center shadow-soft">
+          <div class="card-body">
+            <div class="bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+              style="width: 60px; height: 60px;">
+              <i class="bi bi-star-fill text-white fs-4"></i>
+            </div>
+            <h5 class="fw-bold">
+              <%= typeof dashboardData !=='undefined' ? dashboardData.avgRating : '0.0' %>/5
+            </h5>
+            <p class="text-muted mb-0">Average Rating</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="800">
+        <div class="card text-center shadow-soft">
+          <div class="card-body">
+            <div class="bg-gradient-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+              style="width: 60px; height: 60px;">
+              <i class="bi bi-globe text-white fs-4"></i>
+            </div>
+            <h5 class="fw-bold">
+              <%= typeof dashboardData !=='undefined' ? dashboardData.hikingTrailsCount.toLocaleString() : '0' %>
+            </h5>
+            <p class="text-muted mb-0">Hiking Trails</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="900">
+        <div class="card text-center shadow-soft">
+          <div class="card-body">
+            <div class="bg-gradient-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+              style="width: 60px; height: 60px;">
+              <i class="bi bi-calendar-event text-white fs-4"></i>
+            </div>
+            <h5 class="fw-bold">
+              <%= typeof dashboardData !=='undefined' ? dashboardData.totalReviews.toLocaleString() : '0' %>
+            </h5>
+            <p class="text-muted mb-0">Total Reviews</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="1000">
+        <div class="card text-center shadow-soft">
+          <div class="card-body">
+            <div
+              class="bg-gradient-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+              style="width: 60px; height: 60px;">
+              <i class="bi bi-camera text-white fs-4"></i>
+            </div>
+            <h5 class="fw-bold">
+              <%= typeof dashboardData !=='undefined' ? dashboardData.recentTripsCount.toLocaleString() : '0' %>
+            </h5>
+            <p class="text-muted mb-0">Recent Trips</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js Script -->
+  <script>
+  // Bookings Chart with modern styling
+  <%
+    // Process real booking data by month
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentDate = new Date();
+    const chartLabels = [];
+    const chartData = [];
+
+    // Create data for last 12 months
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+      chartLabels.push(monthNames[date.getMonth()]);
+
+      // Find booking count for this month
+      const monthData = dashboardData.bookingDataByMonth.find(item =>
+        item._id.year === date.getFullYear() && item._id.month === date.getMonth() + 1
+      );
+      chartData.push(monthData ? monthData.bookingCount : 0);
+    }
+  %>
+  
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: <% - JSON.stringify(chartLabels) %>,
+        datasets: [{
+          label: 'Bookings',
+          data: <% - JSON.stringify(chartData) %>,
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#6366f1',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
+            borderColor: '#6366f1',
+            borderWidth: 1,
+            cornerRadius: 8,
+            displayColors: false,
+            callbacks: {
+              label: function (context) {
+                return context.parsed.y + ' bookings';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#6b7280',
+              font: {
+                weight: '500'
+              }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: '#f3f4f6',
+              drawBorder: false
+            },
+            ticks: {
+              color: '#6b7280',
+              font: {
+                weight: '500'
+              },
+              callback: function (value) {
+                return value.toString();
+              }
+            }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        }
+      }
+    });
+
+    // Add smooth animations to KPI cards
+    document.querySelectorAll('.kpi-card').forEach((card, index) => {
+      card.style.animationDelay = `${index * 0.1}s`;
+    });
+  </script>

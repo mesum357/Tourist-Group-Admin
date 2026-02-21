@@ -1,0 +1,535 @@
+<div class="container-fluid py-3">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h3 class="mb-0">Payments Management</h3>
+  </div>
+
+  <!-- Success Message Container -->
+  <div id="successMessage" class="alert alert-success alert-dismissible fade" role="alert" style="display: none;">
+    <i class="bi bi-check-circle me-2"></i>
+    <span id="successMessageText"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <ul class="nav nav-tabs" id="paymentsTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button" role="tab">Payment Requests</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">Payment Settings</button>
+    </li>
+  </ul>
+
+  <div class="tab-content border-start border-end border-bottom p-3 bg-white" id="paymentsTabsContent">
+    <!-- Requests Tab -->
+    <div class="tab-pane fade show active" id="requests" role="tabpanel" aria-labelledby="requests-tab">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex gap-2">
+          <select id="filterStatus" class="form-select form-select-sm" style="width: 200px;">
+            <option value="">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <button id="refreshBtn" class="btn btn-sm btn-outline-primary">Refresh</button>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="payment-table-wrapper d-none d-lg-block">
+        <div class="scroll-indicator mb-2">
+          <small class="text-muted">
+            <i class="bi bi-arrow-left-right me-1"></i>
+            Use the horizontal scrollbar below to view all columns
+          </small>
+        </div>
+        <div class="table-container" id="paymentTableContainer" style="overflow-x: auto;">
+          <table class="table table-sm align-middle" id="requestsTable">
+            <thead class="table-light">
+              <tr>
+                <th>Created</th>
+                <th>Name</th>
+                <th>Amount</th>
+                <th>Package</th>
+                <th>Screenshot</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+        <!-- Custom Horizontal Scrollbar -->
+        <div class="horizontal-scrollbar" id="horizontalScrollbar">
+          <div class="scrollbar-track">
+            <div class="scrollbar-thumb" id="scrollbarThumb"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile/Tablet Card View -->
+      <div class="d-lg-none" id="mobileRequestsContainer">
+        <!-- Cards will be inserted here by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+      <form id="settingsForm" class="row g-3" enctype="multipart/form-data">
+        <div class="col-12 col-md-4">
+          <label class="form-label">QR Code Image <span class="text-danger">*</span></label>
+          <div class="border rounded p-2 text-center">
+            <img id="qrPreview" src="" alt="QR" style="max-width:100%;max-height:220px;display:none;" data-qr-url="<%= (settings && settings.qrImageUrl) ? settings.qrImageUrl : '' %>">
+          </div>
+          <input type="file" class="form-control mt-2" name="qr" accept="image/*" required>
+          <div class="form-text">Upload a QR code image for payments</div>
+        </div>
+        <div class="col-12 col-md-8">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Bank Name</label>
+              <input type="text" class="form-control" name="bankName" value="<%= settings?.bankName || '' %>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Account Name</label>
+              <input type="text" class="form-control" name="accountName" value="<%= settings?.accountName || '' %>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Account Number <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="accountNumber" value="<%= settings?.accountNumber || '' %>" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">IBAN <span class="text-muted">(Optional)</span></label>
+              <input type="text" class="form-control" name="iban" value="<%= settings?.iban || '' %>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">SWIFT</label>
+              <input type="text" class="form-control" name="swift" value="<%= settings?.swift || '' %>">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Instructions</label>
+              <textarea class="form-control" rows="3" name="instructions"><%= settings?.instructions || '' %></textarea>
+            </div>
+          </div>
+          <div class="mt-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <button type="button" id="reloadSettings" class="btn btn-outline-secondary">Reload</button>
+          </div>
+          
+          <!-- Success Message -->
+          <div id="successMessage" class="alert alert-success mt-3" style="display: none;">
+            <i class="bi bi-check-circle me-2"></i>
+            Payment settings saved successfully!
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Screenshot Modal -->
+<div class="modal fade" id="screenshotModal" tabindex="-1" aria-labelledby="screenshotModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="screenshotModalLabel">Payment Screenshot</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="screenshotImage" src="" alt="Payment Screenshot" class="img-fluid rounded" style="max-height: 70vh;">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="downloadScreenshot">Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    const tableBody = document.querySelector('#requestsTable tbody');
+    const mobileContainer = document.getElementById('mobileRequestsContainer');
+    const filterStatus = document.getElementById('filterStatus');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const settingsForm = document.getElementById('settingsForm');
+    const reloadSettingsBtn = document.getElementById('reloadSettings');
+    const qrInput = settingsForm.querySelector('input[name="qr"]');
+    const qrPreview = document.getElementById('qrPreview');
+
+    // Set initial QR preview image if it exists
+    const qrUrl = qrPreview.getAttribute('data-qr-url');
+    if (qrUrl) {
+      qrPreview.src = `${window.location.origin}${qrUrl}`;
+      qrPreview.style.display = 'block';
+    }
+
+    async function loadRequests(){
+      const qs = filterStatus.value ? ('?status=' + encodeURIComponent(filterStatus.value)) : '';
+      const resp = await fetch('/api/payment/requests' + qs);
+      if (!resp.ok) return;
+      const items = await resp.json();
+      
+      // Clear both containers
+      tableBody.innerHTML = '';
+      mobileContainer.innerHTML = '';
+      
+      items.forEach(function(r){
+        const created = new Date(r.createdAt).toLocaleDateString() + '<br><small class="text-muted">' + new Date(r.createdAt).toLocaleTimeString() + '</small>';
+        const userName = r.userName || '-';
+        const amount = `$${(r.amount || 0).toLocaleString()} ${r.currency || ''}`;
+        const packageName = r.tourPackageId ? ('Package #' + r.tourPackageId) : (r.hikingId ? ('Hiking #' + r.hikingId) : '-');
+        const statusBadge = r.status === 'approved' ? 'success' : (r.status === 'rejected' ? 'danger' : 'secondary');
+        const statusText = r.status === 'approved' ? 'Confirmed' : (r.status === 'rejected' ? 'Rejected' : 'Pending');
+        
+        // Screenshot button - construct full URL for image
+        // Try multiple URL construction methods for production compatibility
+        let fullImageUrl = '';
+        let testUrl = '';
+        if (r.proofImageUrl) {
+          // Method 1: Use current origin
+          fullImageUrl = `${window.location.origin}${r.proofImageUrl}`;
+          
+          // Method 2: If that fails, try using the test endpoint
+          testUrl = `${window.location.origin}/api/test-image/${r.proofImageUrl.split('/').pop()}`;
+          
+          console.log('Payment request:', r._id, 'Image URL:', r.proofImageUrl, 'Full URL:', fullImageUrl, 'Test URL:', testUrl);
+        }
+        
+        const screenshotBtn = r.proofImageUrl ? 
+          `<button class="btn btn-outline-info btn-sm" data-action="view-screenshot" data-url="${fullImageUrl}" data-test-url="${testUrl}" data-id="${r._id}">
+            <i class="bi bi-image me-1"></i>View
+          </button>` : 
+          '<span class="text-muted">No image</span>';
+        
+        // Action buttons - only show for pending requests
+        const actionButtons = r.status === 'pending' ? 
+          `<div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-success" data-action="approve" data-id="${r._id}">Accept</button>
+            <button class="btn btn-outline-danger" data-action="reject" data-id="${r._id}">Reject</button>
+          </div>` : 
+          `<span class="badge bg-${statusBadge}">${statusText}</span>`;
+        
+        // Desktop table row
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${created}</td>
+          <td>${userName}</td>
+          <td>${amount}</td>
+          <td>${packageName}</td>
+          <td>${screenshotBtn}</td>
+          <td>${actionButtons}</td>`;
+        tableBody.appendChild(tr);
+        
+        // Mobile card
+        const card = document.createElement('div');
+        card.className = 'card mb-3';
+        card.innerHTML = `
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="card-title mb-0">${packageName}</h6>
+              <span class="badge bg-${statusBadge}">${statusText}</span>
+            </div>
+            <p class="card-text">
+              <strong>Name:</strong> ${userName}<br>
+              <strong>Amount:</strong> ${amount}<br>
+              <strong>Created:</strong> ${new Date(r.createdAt).toLocaleString()}
+            </p>
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                ${screenshotBtn}
+              </div>
+              <div>
+                ${actionButtons}
+              </div>
+            </div>
+          </div>`;
+        mobileContainer.appendChild(card);
+      });
+      
+      // Reinitialize scrollbar and check indicator after loading data
+      setTimeout(() => {
+        initHorizontalScrollbar();
+        checkScrollIndicator();
+      }, 50);
+    }
+
+    async function updateRequest(id, status){
+      const resp = await fetch('/api/payment/requests/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (resp.ok) { 
+        // Show success message
+        const successMessage = document.getElementById('successMessage');
+        const successMessageText = document.getElementById('successMessageText');
+        
+        if (status === 'approved') {
+          successMessageText.textContent = 'Payment request approved successfully! Booking has been confirmed.';
+        } else if (status === 'rejected') {
+          successMessageText.textContent = 'Payment request rejected successfully! Booking has been cancelled.';
+        }
+        
+        successMessage.style.display = 'block';
+        successMessage.classList.add('show');
+        
+        // Auto-hide message after 5 seconds
+        setTimeout(() => {
+          successMessage.classList.remove('show');
+          setTimeout(() => {
+            successMessage.style.display = 'none';
+          }, 150);
+        }, 5000);
+        
+        // Reload requests to show updated status
+        await loadRequests(); 
+      }
+    }
+
+    // Event listener for both desktop table and mobile cards
+    document.addEventListener('click', function(e){
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-id');
+      const action = btn.getAttribute('data-action');
+      
+      if (action === 'approve') updateRequest(id, 'approved');
+      if (action === 'reject') updateRequest(id, 'rejected');
+      if (action === 'view-screenshot') {
+        const url = btn.getAttribute('data-url');
+        const testUrl = btn.getAttribute('data-test-url');
+        if (url) {
+          // Show screenshot in modal
+          showScreenshotModal(url, testUrl);
+        }
+      }
+    });
+
+    filterStatus.addEventListener('change', loadRequests);
+    refreshBtn.addEventListener('click', loadRequests);
+
+    // Settings load/save
+    async function loadSettings(){
+      const resp = await fetch('/api/payment/settings');
+      if (!resp.ok) return;
+      const s = await resp.json();
+      settingsForm.bankName.value = s.bankName || '';
+      settingsForm.accountName.value = s.accountName || '';
+      settingsForm.accountNumber.value = s.accountNumber || '';
+      settingsForm.iban.value = s.iban || '';
+      settingsForm.swift.value = s.swift || '';
+      settingsForm.instructions.value = s.instructions || '';
+      if (s.qrImageUrl) {
+        qrPreview.src = `${window.location.origin}${s.qrImageUrl}`;
+        qrPreview.style.display = 'block';
+      }
+    }
+
+    settingsForm.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const formData = new FormData(settingsForm);
+      const resp = await fetch('/api/payment/settings', { method: 'PUT', body: formData });
+      if (resp.ok) {
+        const s = await resp.json();
+        if (s.qrImageUrl) { qrPreview.src = `${window.location.origin}${s.qrImageUrl}`; qrPreview.style.display = 'block'; }
+        
+        // Show success message
+        const successMsg = document.getElementById('successMessage');
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+          successMsg.style.display = 'none';
+        }, 3000);
+      }
+    });
+
+    qrInput.addEventListener('change', function(){
+      const f = this.files && this.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = function(e){ qrPreview.src = e.target.result; qrPreview.style.display = 'block'; };
+      reader.readAsDataURL(f);
+    });
+
+    reloadSettingsBtn.addEventListener('click', loadSettings);
+
+    // Screenshot modal functionality
+    function showScreenshotModal(imageUrl, testUrl = null) {
+      const modal = new bootstrap.Modal(document.getElementById('screenshotModal'));
+      const screenshotImage = document.getElementById('screenshotImage');
+      const downloadBtn = document.getElementById('downloadScreenshot');
+      
+      // Set the image source with error handling
+      screenshotImage.src = imageUrl;
+      
+      // Add error handling for image loading
+      screenshotImage.onerror = function() {
+        console.log('Primary image failed to load, trying test URL:', testUrl);
+        if (testUrl) {
+          this.src = testUrl;
+        } else {
+          this.alt = 'Image not found';
+          this.style.display = 'none';
+        }
+      };
+      
+      screenshotImage.onload = function() {
+        console.log('Image loaded successfully:', this.src);
+      };
+      
+      // Set up download functionality
+      downloadBtn.onclick = function() {
+        const link = document.createElement('a');
+        link.href = screenshotImage.src;
+        link.download = 'payment-screenshot-' + Date.now() + '.jpg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+      
+      // Show the modal
+      modal.show();
+    }
+
+    // Custom horizontal scrollbar functionality
+    let isDragging = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    function initHorizontalScrollbar() {
+      const tableContainer = document.getElementById('paymentTableContainer');
+      const scrollbar = document.getElementById('horizontalScrollbar');
+      const scrollbarThumb = document.getElementById('scrollbarThumb');
+      const scrollIndicator = document.querySelector('.scroll-indicator');
+
+      if (!tableContainer || !scrollbar || !scrollbarThumb) return;
+
+      function updateScrollbar() {
+        const table = tableContainer.querySelector('#requestsTable');
+        if (!table) return;
+
+        // Force table to render and get actual dimensions
+        const containerWidth = tableContainer.clientWidth;
+        const tableWidth = table.scrollWidth;
+        const scrollLeft = tableContainer.scrollLeft;
+        const maxScroll = Math.max(0, tableWidth - containerWidth);
+
+        console.log('Container width:', containerWidth, 'Table width:', tableWidth, 'Max scroll:', maxScroll);
+
+        if (tableWidth <= containerWidth) {
+          // Table fits, hide scrollbar and indicator
+          scrollbar.style.display = 'none';
+          scrollIndicator.style.display = 'none';
+          return;
+        }
+
+        // Show scrollbar and indicator
+        scrollbar.style.display = 'block';
+        scrollIndicator.style.display = 'block';
+
+        // Calculate thumb size and position
+        const thumbWidthPercent = Math.max(10, (containerWidth / tableWidth) * 100);
+        const thumbPositionPercent = maxScroll > 0 ? (scrollLeft / maxScroll) * (100 - thumbWidthPercent) : 0;
+
+        scrollbarThumb.style.width = thumbWidthPercent + '%';
+        scrollbarThumb.style.left = thumbPositionPercent + '%';
+      }
+
+      // Mouse events for scrollbar thumb
+      scrollbarThumb.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.pageX - scrollbarThumb.offsetLeft;
+        scrollLeft = tableContainer.scrollLeft;
+        scrollbarThumb.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        const table = tableContainer.querySelector('#requestsTable');
+        if (!table) return;
+        
+        const containerWidth = tableContainer.clientWidth;
+        const tableWidth = table.scrollWidth;
+        const maxScroll = Math.max(0, tableWidth - containerWidth);
+        
+        const x = e.pageX - tableContainer.offsetLeft;
+        const walk = (x - startX) * (maxScroll / (scrollbar.clientWidth - scrollbarThumb.offsetWidth));
+        tableContainer.scrollLeft = Math.max(0, Math.min(maxScroll, scrollLeft + walk));
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        scrollbarThumb.style.cursor = 'grab';
+      });
+
+      // Click on track to jump to position
+      scrollbar.addEventListener('click', (e) => {
+        if (e.target === scrollbarThumb) return;
+        const rect = scrollbar.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percentage = clickX / rect.width;
+        const table = tableContainer.querySelector('#requestsTable');
+        if (table) {
+          const containerWidth = tableContainer.clientWidth;
+          const tableWidth = table.scrollWidth;
+          const maxScroll = Math.max(0, tableWidth - containerWidth);
+          tableContainer.scrollLeft = percentage * maxScroll;
+        }
+      });
+
+      // Update scrollbar when table scrolls
+      tableContainer.addEventListener('scroll', updateScrollbar);
+
+      // Update scrollbar on resize
+      window.addEventListener('resize', updateScrollbar);
+
+      // Initial update with delay to ensure table is rendered
+      setTimeout(updateScrollbar, 100);
+      setTimeout(updateScrollbar, 500); // Second update after data loads
+    }
+
+    // Hide scroll indicator if table doesn't need horizontal scrolling
+    function checkScrollIndicator() {
+      const container = document.getElementById('paymentTableContainer');
+      const indicator = container?.querySelector('.scroll-indicator');
+      if (!container || !indicator) return;
+      
+      const table = container.querySelector('#requestsTable');
+      if (table && table.scrollWidth > container.clientWidth) {
+        indicator.style.display = 'block';
+      } else {
+        indicator.style.display = 'none';
+      }
+    }
+
+    // Check scroll indicator on load and resize
+    window.addEventListener('resize', checkScrollIndicator);
+    
+    // init
+    loadRequests();
+    loadSettings();
+    
+    // Initialize horizontal scrollbar
+    setTimeout(() => {
+      initHorizontalScrollbar();
+      checkScrollIndicator();
+    }, 100);
+    
+    // Fallback: Ensure table is always scrollable
+    setTimeout(() => {
+      const container = document.getElementById('paymentTableContainer');
+      const table = container?.querySelector('#requestsTable');
+      if (container && table) {
+        // Force horizontal scrolling if content overflows
+        if (table.scrollWidth > container.clientWidth) {
+          container.style.overflowX = 'auto';
+          console.log('Table content overflows, enabling horizontal scroll');
+        }
+      }
+    }, 200);
+  });
+</script>
+
+
