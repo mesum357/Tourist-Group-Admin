@@ -353,6 +353,50 @@ paymentRequestSchema.pre('save', function (next) {
     next();
 });
 
+// Testimonial Schema
+const testimonialSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    country: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    avatarUrl: {
+        type: String,
+        default: ''
+    },
+    storyImgUrl: {
+        type: String,
+        default: ''
+    },
+    active: {
+        type: Boolean,
+        default: true
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin',
+        required: false
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+testimonialSchema.pre('save', function (next) {
+    this.updatedAt = Date.now();
+    next();
+});
+
 // Apply plugins
 adminSchema.plugin(passportLocalMongoose);
 adminSchema.plugin(findOrCreate);
@@ -541,6 +585,9 @@ const Review = mongoose.model('Review', reviewSchema);
 const PaymentSetting = mongoose.model('PaymentSetting', paymentSettingSchema);
 const PaymentRequest = mongoose.model('PaymentRequest', paymentRequestSchema);
 
+// Testimonial model
+const Testimonial = mongoose.model('Testimonial', testimonialSchema);
+
 // Create aliases for Tour Package, RecentTrip, Hiking, andBooking models to match Tourist Website naming
 const TouristRecentTrip = RecentTrip;
 const TouristTourPackage = TourPackage;
@@ -563,5 +610,6 @@ module.exports = {
     TouristHiking,
     TouristBooking,
     PaymentSetting,
-    PaymentRequest
+    PaymentRequest,
+    Testimonial
 };

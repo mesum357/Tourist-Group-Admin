@@ -32,7 +32,8 @@ const {
     TouristHiking,
     TouristBooking,
     PaymentSetting,
-    PaymentRequest
+    PaymentRequest,
+    Testimonial
 } = require('./db');
 
 // Increase body parser limits for image uploads
@@ -1292,6 +1293,141 @@ app.get('/api/test-payment-requests', ensureAuthenticated, async function (req, 
     } catch (error) {
         console.error('Error testing payment requests:', error);
         res.status(500).json({ error: 'Failed to test payment requests', details: error.message });
+    }
+});
+
+// Testimonials page route
+app.get('/testimonials', ensureAuthenticated, function (req, res) {
+    res.render('testimonials', {
+        title: 'Testimonials',
+        pageTitle: 'Testimonials',
+        currentPage: 'testimonials',
+        user: req.user,
+        layout: 'layout'
+    });
+});
+
+// Testimonials API Routes
+app.get('/api/testimonials', ensureAuthenticated, async function (req, res) {
+    try {
+        const testimonials = await Testimonial.find().sort({ createdAt: -1 });
+        res.json(testimonials);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch testimonials' });
+    }
+});
+
+app.post('/api/testimonials', ensureAuthenticated, upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'storyImage', maxCount: 1 }
+]), async function (req, res) {
+    try {
+        const { name, country } = req.body;
+
+        let avatarUrl = '';
+        let storyImgUrl = '';
+
+        if (req.files && req.files.avatar && req.files.avatar[0]) {
+            avatarUrl = '/uploads/' + req.files.avatar[0].filename;
+        }
+        if (req.files && req.files.storyImage && req.files.storyImage[0]) {
+            storyImgUrl = '/uploads/' + req.files.storyImage[0].filename;
+        }
+
+        const testimonial = new Testimonial({
+            name,
+            country,
+            avatarUrl,
+            storyImgUrl,
+            createdBy: req.user._id
+        });
+
+        await testimonial.save();
+        res.json(testimonial);
+    } catch (err) {
+        console.error('Error creating testimonial:', err);
+        res.status(500).json({ error: 'Failed to create testimonial' });
+    }
+});
+
+app.put('/api/testimonials/:id', ensureAuthenticated, upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'storyImage', maxCount: 1 }
+]), async function (req, res) {
+    try {
+        const { name, country, active } = req.body;
+
+        const updateData = {
+            name,
+            country,
+            updatedAt: Date.now()
+        };
+
+        if (typeof active !== 'undefined') {
+            updateData.active = active === 'true' || active === true;
+        }
+
+        if (req.files && req.files.avatar && req.files.avatar[0]) {
+            updateData.avatarUrl = '/uploads/' + req.files.avatar[0].filename;
+        } else if (req.body.avatarUrl) {
+            updateData.avatarUrl = req.body.avatarUrl;
+        }
+
+        if (req.files && req.files.storyImage && req.files.storyImage[0]) {
+            updateData.storyImgUrl = '/uploads/' + req.files.storyImage[0].filename;
+        } else if (req.body.storyImgUrl) {
+            updateData.storyImgUrl = req.body.storyImgUrl;
+        }
+
+        const testimonial = await Testimonial.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true }
+        );
+
+        if (!testimonial) {
+            return res.status(404).json({ error: 'Testimonial not found' });
+        }
+
+        res.json(testimonial);
+    } catch (err) {
+        console.error('Error updating testimonial:', err);
+        res.status(500).json({ error: 'Failed to update testimonial' });
+    }
+});
+
+app.delete('/api/testimonials/:id', ensureAuthenticated, async function (req, res) {
+    try {
+        const testimonial = await Testimonial.findByIdAndDelete(req.params.id);
+
+        if (!testimonial) {
+            return res.status(404).json({ error: 'Testimonial not found' });
+        }
+
+        // Clean up uploaded files
+        [testimonial.avatarUrl, testimonial.storyImgUrl].forEach(function (fileUrl) {
+            if (fileUrl && fileUrl.startsWith('/uploads/')) {
+                const filePath = path.join(__dirname, 'public', fileUrl);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            }
+        });
+
+        res.json({ message: 'Testimonial deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete testimonial' });
+    }
+});
+
+// Public endpoint for tourist website to fetch testimonials
+app.get('/public/testimonials', async function (req, res) {
+    try {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        const testimonials = await Testimonial.find({ active: true }).sort({ createdAt: -1 });
+        res.json(testimonials);
+    } catch (e) {
+        res.status(200).json([]);
     }
 });
 
