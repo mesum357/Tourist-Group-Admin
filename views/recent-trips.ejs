@@ -366,10 +366,31 @@
                   <input type="text" class="form-control" id="imageTitle" required>
                 </div>
                 <div class="mb-3">
-                  <label for="imageDescription" class="form-label">Trip Description *</label>
-                  <textarea class="form-control" id="imageDescription" rows="3" placeholder="Enter trip description..."
+                  <label for="imageDescription" class="form-label">Trip Description (Short) *</label>
+                  <textarea class="form-control" id="imageDescription" rows="2" placeholder="Enter short description..."
                     required></textarea>
                 </div>
+                <div class="mb-3">
+                  <label for="fullDescription" class="form-label">Full Trip Description *</label>
+                  <textarea class="form-control" id="fullDescription" rows="5" placeholder="Enter full trip details..."
+                    required></textarea>
+                </div>
+
+                <!-- Gallery Selection Section -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">Upload Image Gallery</label>
+                  <div id="galleryDropzone" class="dropzone" tabindex="0" style="margin:0; padding: 20px;">
+                    <div class="dropzone-icon" style="font-size: 24px;">
+                      <i class="bi bi-images"></i>
+                    </div>
+                    <div class="dropzone-text" style="font-size: 14px;">Drag & drop gallery images</div>
+                    <div class="dropzone-subtext">or click to select files</div>
+                  </div>
+                  <input id="galleryFileInput" type="file" accept="image/*" multiple style="display:none" />
+                  <div id="galleryPreview" class="d-flex flex-wrap gap-2 mt-3"></div>
+                  <div id="existingGallery" class="d-flex flex-wrap gap-2 mt-2"></div>
+                </div>
+
                 <div class="mb-3">
                   <label class="form-label">Image Details</label>
                   <div id="imageDetails" class="border rounded p-3" style="background:#f8f9fa;font-size:14px;">
@@ -446,6 +467,23 @@
     function setupEventListeners() {
       // Add Image button
       document.getElementById('addImageBtn').addEventListener('click', () => openImageModal());
+
+      // Gallery dropzone events
+      const galleryDropzone = document.getElementById('galleryDropzone');
+      const galleryFileInput = document.getElementById('galleryFileInput');
+
+      galleryDropzone.addEventListener('click', () => galleryFileInput.click());
+      galleryDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        galleryDropzone.classList.add('dragover');
+      });
+      galleryDropzone.addEventListener('dragleave', () => galleryDropzone.classList.remove('dragover'));
+      galleryDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        galleryDropzone.classList.remove('dragover');
+        handleGalleryFiles(e.dataTransfer.files);
+      });
+      galleryFileInput.addEventListener('change', (e) => handleGalleryFiles(e.target.files));
 
       // Modal dropzone events
       const modalDropzone = document.getElementById('modalDropzone');
@@ -548,6 +586,50 @@
       document.getElementById('imageDetails').innerHTML = '<div class="text-muted">No image selected</div>';
     }
 
+    let selectedGalleryFiles = [];
+
+    function handleGalleryFiles(files) {
+      const filesArray = Array.from(files);
+      selectedGalleryFiles = [...selectedGalleryFiles, ...filesArray];
+      renderGalleryPreview();
+    }
+
+    function renderGalleryPreview() {
+      const previewContainer = document.getElementById('galleryPreview');
+      previewContainer.innerHTML = '';
+      
+      selectedGalleryFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const div = document.createElement('div');
+          div.className = 'position-relative';
+          div.style.width = '80px';
+          div.style.height = '80px';
+          div.innerHTML = `
+            <img src="${e.target.result}" class="w-100 h-100 object-fit-cover rounded border">
+            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" 
+                    style="width:20px;height:20px;font-size:12px;" onclick="removeGalleryFile(${index})">
+              <i class="bi bi-x"></i>
+            </button>
+          `;
+          previewContainer.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removeGalleryFile(index) {
+      selectedGalleryFiles.splice(index, 1);
+      renderGalleryPreview();
+    }
+
+    function removeExistingGalleryImage(url) {
+      const existingDiv = document.querySelector(`[data-url="${url}"]`);
+      if (existingDiv) {
+        existingDiv.remove();
+      }
+    }
+
 
 
 
@@ -558,15 +640,23 @@
       const imageId = document.getElementById('imageId');
       const imageTitle = document.getElementById('imageTitle');
       const imageDescription = document.getElementById('imageDescription');
+      const fullDescription = document.getElementById('fullDescription');
       const modalDropzone = document.getElementById('modalDropzone');
       const imagePreviewSection = document.getElementById('imagePreviewSection');
       const imageDetails = document.getElementById('imageDetails');
+      const existingGalleryContainer = document.getElementById('existingGallery');
+      const galleryPreviewContainer = document.getElementById('galleryPreview');
+
+      selectedGalleryFiles = [];
+      galleryPreviewContainer.innerHTML = '';
+      existingGalleryContainer.innerHTML = '';
 
       if (isEdit && imageData) {
         modalTitle.textContent = 'Edit Trip';
         imageId.value = imageData._id;
         imageTitle.value = imageData.title;
         imageDescription.value = imageData.description || '';
+        fullDescription.value = imageData.fullDescription || '';
 
         // Show existing image
         imagePreviewSection.style.display = 'block';
@@ -575,6 +665,26 @@
           <div><strong>Current Image:</strong> ${imageData.title}</div>
         `;
         modalDropzone.style.display = 'none';
+
+        // Show existing gallery
+        if (imageData.gallery && imageData.gallery.length > 0) {
+          existingGalleryContainer.innerHTML = '<div class="w-100 fw-semibold mb-1" style="font-size:14px">Existing Gallery:</div>';
+          imageData.gallery.forEach(url => {
+            const div = document.createElement('div');
+            div.className = 'position-relative existing-gallery-item';
+            div.setAttribute('data-url', url);
+            div.style.width = '80px';
+            div.style.height = '80px';
+            div.innerHTML = `
+              <img src="${url}" class="w-100 h-100 object-fit-cover rounded border">
+              <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" 
+                      style="width:20px;height:20px;font-size:12px;" onclick="removeExistingGalleryImage('${url}')">
+                <i class="bi bi-x"></i>
+              </button>
+            `;
+            existingGalleryContainer.appendChild(div);
+          });
+        }
       } else {
         modalTitle.textContent = 'Add New Trip';
         imageId.value = '';
@@ -593,62 +703,60 @@
     // Save Image
     async function saveImage() {
       const imageId = document.getElementById('imageId').value;
-      const imageData = {
-        title: document.getElementById('imageTitle').value,
-        description: document.getElementById('imageDescription').value
-      };
+      const title = document.getElementById('imageTitle').value;
+      const description = document.getElementById('imageDescription').value;
+      const fullDescription = document.getElementById('fullDescription').value;
 
-      if (!imageData.title.trim()) {
+      if (!title.trim()) {
         showAlert('Please enter a title for the image', 'warning');
         return;
       }
 
       try {
-        if (imageId) {
-          // Update existing image
-          const response = await fetch(`/api/recent-trips/${imageId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(imageData)
-          });
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('fullDescription', fullDescription);
 
-          if (response.ok) {
-            showAlert('Image updated successfully', 'success');
-            imageModal.hide();
-            loadGallery();
-          } else {
-            throw new Error('Failed to update image');
-          }
-        } else {
-          // Add new image
-          const selectedImageData = document.getElementById('selectedImageData').value;
-          if (!selectedImageData) {
-            showAlert('Please select an image to upload', 'warning');
-            return;
-          }
-
+        const selectedImageData = document.getElementById('selectedImageData').value;
+        if (selectedImageData) {
           const imageInfo = JSON.parse(selectedImageData);
-
-          const response = await fetch('/api/recent-trips', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              ...imageData,
-              imageUrl: imageInfo.preview
-            })
-          });
-
-          if (response.ok) {
-            showAlert('Image uploaded successfully', 'success');
-            imageModal.hide();
-            loadGallery();
+          if (imageInfo.file) {
+            formData.append('image', imageInfo.file);
           } else {
-            throw new Error('Failed to upload image');
+            formData.append('imageUrl', imageInfo.preview);
           }
         }
+
+        selectedGalleryFiles.forEach(file => {
+          formData.append('gallery', file);
+        });
+
+        // Get remaining existing gallery images
+        const existingItems = document.querySelectorAll('.existing-gallery-item');
+        existingItems.forEach(item => {
+          formData.append('existingGallery', item.getAttribute('data-url'));
+        });
+
+        const url = imageId ? `/api/recent-trips/${imageId}` : '/api/recent-trips';
+        const method = imageId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method: method,
+          body: formData
+        });
+
+        if (response.ok) {
+          showAlert(imageId ? 'Trip updated successfully' : 'Trip uploaded successfully', 'success');
+          imageModal.hide();
+          loadGallery();
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to save trip');
+        }
       } catch (error) {
-        console.error('Error saving image:', error);
-        showAlert('Failed to save image', 'danger');
+        console.error('Error saving trip:', error);
+        showAlert(error.message || 'Failed to save trip', 'danger');
       }
     }
 

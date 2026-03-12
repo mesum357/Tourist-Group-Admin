@@ -873,46 +873,79 @@ app.get('/api/recent-trips', ensureAuthenticated, async function (req, res) {
     }
 });
 
-app.post('/api/recent-trips', ensureAuthenticated, upload.single('image'), async function (req, res) {
+app.post('/api/recent-trips', ensureAuthenticated, upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'gallery', maxCount: 10 }
+]), async function (req, res) {
     try {
-        const { title, description } = req.body;
+        const { title, description, fullDescription, existingGallery } = req.body;
 
         let imageUrl = '';
-        if (req.file) {
-            imageUrl = `/uploads/${req.file.filename}`;
+        if (req.files && req.files.image && req.files.image[0]) {
+            imageUrl = `/uploads/${req.files.image[0].filename}`;
         } else if (req.body.imageUrl) {
             imageUrl = req.body.imageUrl;
+        }
+
+        let gallery = [];
+        if (req.files && req.files.gallery) {
+            gallery = req.files.gallery.map(file => `/uploads/${file.filename}`);
+        }
+
+        // Add existing gallery if any (for updates, though this is POST)
+        if (existingGallery) {
+            const existing = Array.isArray(existingGallery) ? existingGallery : [existingGallery];
+            gallery = [...gallery, ...existing];
         }
 
         const trip = new RecentTrip({
             title,
             description,
+            fullDescription,
             imageUrl,
+            gallery,
             createdBy: req.user._id
         });
 
         await trip.save();
         res.json(trip);
     } catch (err) {
+        console.error('Error creating recent trip:', err);
         res.status(500).json({ error: 'Failed to create recent trip' });
     }
 });
 
-app.put('/api/recent-trips/:id', ensureAuthenticated, upload.single('image'), async function (req, res) {
+app.put('/api/recent-trips/:id', ensureAuthenticated, upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'gallery', maxCount: 10 }
+]), async function (req, res) {
     try {
-        const { title, description } = req.body;
+        const { title, description, fullDescription, existingGallery } = req.body;
 
         const updateData = {
             title,
             description,
+            fullDescription,
             updatedAt: Date.now()
         };
 
-        if (req.file) {
-            updateData.imageUrl = `/uploads/${req.file.filename}`;
+        if (req.files && req.files.image && req.files.image[0]) {
+            updateData.imageUrl = `/uploads/${req.files.image[0].filename}`;
         } else if (req.body.imageUrl) {
             updateData.imageUrl = req.body.imageUrl;
         }
+
+        let gallery = [];
+        if (existingGallery) {
+            gallery = Array.isArray(existingGallery) ? existingGallery : [existingGallery];
+        }
+
+        if (req.files && req.files.gallery) {
+            const newImages = req.files.gallery.map(file => `/uploads/${file.filename}`);
+            gallery = [...gallery, ...newImages];
+        }
+
+        updateData.gallery = gallery;
 
         const trip = await RecentTrip.findByIdAndUpdate(
             req.params.id,
@@ -926,6 +959,7 @@ app.put('/api/recent-trips/:id', ensureAuthenticated, upload.single('image'), as
 
         res.json(trip);
     } catch (err) {
+        console.error('Error updating recent trip:', err);
         res.status(500).json({ error: 'Failed to update recent trip' });
     }
 });

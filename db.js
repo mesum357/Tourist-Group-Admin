@@ -79,6 +79,13 @@ const recentTripSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    fullDescription: {
+        type: String,
+        trim: true
+    },
+    gallery: [{
+        type: String
+    }],
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin',
